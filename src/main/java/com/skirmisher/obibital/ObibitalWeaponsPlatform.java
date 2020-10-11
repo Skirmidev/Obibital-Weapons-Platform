@@ -25,6 +25,8 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         Context context = new Context();
+
+        System.out.println(update);
         //bot only intended to run in one group at a time
         if(!update.getMessage().getChatId().equals(groupId)){
             System.out.println("Someone has attempted to access the bot from outside the intended group."  + "\n" +
@@ -39,6 +41,8 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
             Commands.command(context, update, this);
     
             StickerPackBanner.checkValidity(context, update, this);
+
+            NewJoinRestrictions.manageNewJoin(context, update, this);
         }
     }
 
