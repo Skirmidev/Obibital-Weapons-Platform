@@ -32,13 +32,7 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
 
         //switch on chat ID
         if(update.getMessage().getChatId().equals(groupId)) {
-            StickerSpam.spamCheck(context, update, this);
-
-            Commands.command(context, update, this);
-    
-            StickerPackBanner.checkValidity(context, update, this);
-
-            NewJoinRestrictions.manageNewJoin(context, update, this);
+            ModuleControl.runChatModules(context, update, this);
             //message in the group, process as normal
         } else if (admins.contains(update.getMessage().getChatId())){
             //message from an approved admin, permit command interface
@@ -46,25 +40,6 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
         } else if (update.getMessage().getChatId().equals(modChatId)) {
             //message in the mod chat, permit command interface
             AdminInterface.run(context, update, this);
-        }
-
-
-        //bot only intended to run in one group at a time
-        if(!update.getMessage().getChatId().equals(groupId)){
-            System.out.println("Someone has attempted to access the bot from outside the intended group."  + "\n" +
-                    "Access Source:" + update.getMessage().getChatId() + "\n" + 
-                    "Intended Group:" + groupId + "\n" +
-                    "");
-
-            //only admins should be allowed to edit the bot from outside the group.
-        } else {
-            StickerSpam.spamCheck(context, update, this);
-
-            Commands.command(context, update, this);
-    
-            StickerPackBanner.checkValidity(context, update, this);
-
-            NewJoinRestrictions.manageNewJoin(context, update, this);
         }
     }
 

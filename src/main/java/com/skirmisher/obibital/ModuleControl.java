@@ -5,10 +5,10 @@ import com.skirmisher.data.*;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class ModuleControl {
-    static boolean stickerSpam = false;
-    static boolean commands = false;
-    static boolean stickerPackBanner = false;
-    static boolean newJoinRestrictions = false;
+    static boolean stickerSpam = true;
+    static boolean commands = true;
+    static boolean stickerPackBanner = true;
+    static boolean newJoinRestrictions = true;
 
     public static void runChatModules(Context context, Update update, ObibitalWeaponsPlatform bot){
         

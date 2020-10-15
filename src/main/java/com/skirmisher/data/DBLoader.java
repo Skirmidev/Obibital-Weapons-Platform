@@ -18,7 +18,7 @@ public class DBLoader {
     // Config                                //
     ///////////////////////////////////////////
     public static List<ConfigBean> loadConfig() throws IOException {
-        Path myPath = Paths.get("src/main/resources/config.csv");
+        Path myPath = Paths.get("src/main/data/config.csv");
 
         try (BufferedReader br = Files.newBufferedReader(myPath,
                 StandardCharsets.UTF_8)) {
@@ -41,7 +41,7 @@ public class DBLoader {
 
     public static void saveConfig(List<ConfigBean> input) {
         try{
-            Writer writer = new FileWriter("src/main/resources/config.csv");
+            Writer writer = new FileWriter("src/main/data/config.csv");
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             beanToCsv.write(input);
             writer.close();
@@ -54,7 +54,7 @@ public class DBLoader {
     // Banned Sticker Packs                  //
     ///////////////////////////////////////////
     public static List<BannedStickerBean> GetBannedStickers() throws IOException {
-        Path myPath = Paths.get("src/main/resources/bannedStickers.csv");
+        Path myPath = Paths.get("src/main/data/bannedStickers.csv");
 
         try (BufferedReader br = Files.newBufferedReader(myPath,
                 StandardCharsets.UTF_8)) {
@@ -77,7 +77,7 @@ public class DBLoader {
 
     public static void updateBannedStickers(List<BannedStickerBean> packsToBan) {
         try{
-            Writer writer = new FileWriter("src/main/resources/bannedStickers.csv");
+            Writer writer = new FileWriter("src/main/data/bannedStickers.csv");
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             beanToCsv.write(packsToBan);
             writer.close();
@@ -91,7 +91,7 @@ public class DBLoader {
     ///////////////////////////////////////////
     public static List<Long> getAdmins() throws IOException {
         ArrayList<Long> admins = new ArrayList<>();
-        Path myPath = Paths.get("src/main/resources/admins.csv");
+        Path myPath = Paths.get("src/main/data/admins.csv");
 
         try (BufferedReader br = Files.newBufferedReader(myPath,
                 StandardCharsets.UTF_8)) {
@@ -117,7 +117,7 @@ public class DBLoader {
     }
 
     public static void addAdmin(Long id) throws IOException {
-        Path myPath = Paths.get("src/main/resources/admins.csv");
+        Path myPath = Paths.get("src/main/data/admins.csv");
         List<AdminBean> adminBeans = new ArrayList<>();
         List<Long> admins = new ArrayList<Long>();
 
@@ -143,7 +143,7 @@ public class DBLoader {
             } else 
             adminBeans.add(new AdminBean(id));
 
-            Writer writer = new FileWriter("src/main/resources/admin.csv");
+            Writer writer = new FileWriter("src/main/data/admin.csv");
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             
             beanToCsv.write(adminBeans);
@@ -154,7 +154,7 @@ public class DBLoader {
     }
 
     public static void removeAdmin(Long id) throws IOException {
-        Path myPath = Paths.get("src/main/resources/admins.csv");
+        Path myPath = Paths.get("src/main/data/admins.csv");
         List<AdminBean> adminBeans = new ArrayList<>();
         List<Long> admins = new ArrayList<Long>();
 
@@ -180,7 +180,7 @@ public class DBLoader {
                 adminBeans.remove(adminBeans.indexOf(id));
             } 
 
-            Writer writer = new FileWriter("src/main/resources/admin.csv");
+            Writer writer = new FileWriter("src/main/data/admin.csv");
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             
             beanToCsv.write(adminBeans);

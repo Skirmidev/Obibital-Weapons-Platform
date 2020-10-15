@@ -16,3 +16,4 @@ src/main/resources/*.csv
 .classpath
 *.iml
 .factorypath
+/dockerdata

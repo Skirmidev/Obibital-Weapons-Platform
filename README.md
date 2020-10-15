@@ -17,3 +17,7 @@ Please refer to the samples in `src/main/resources/Samples` provided.
 ## Running the bot
 
 java -jar ./target/telegram-modbot-0.0.1.jar
+
+##docker running the bot INDEV
+
+ docker run -it --mount type=bind,source=D:\Files\Projects\Programming\VersionControlled\TelegramModerationBot\dockerdata,target=/src/main/data telegram-modbot

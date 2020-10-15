@@ -11,6 +11,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <dockerfile-maven-version>1.4.12</dockerfile-maven-version>
     </properties>
 
     <dependencies>
@@ -50,6 +51,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <outputFile>target\telegram-modbot.jar</outputFile>
+                            <overwrite>false</overwrite>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -71,30 +74,150 @@
                 </executions>
             </plugin>
 
+            <!-- copy the data files to where they are needed (if not already present). by default should not overwrite -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath" />
+                                <if>
+                                    <available file="${project.basedir}/dockerdata/"/>
+                                    <then>
+                                        <!-- Folder already exists means -->
+                                    </then>
+                                    <else>
+                                        <!-- Do something with it -->
+                                        <copy todir="${project.basedir}/dockerdata/">
+                                            <fileset dir="${project.basedir}/src/main/data/" />
+                                        </copy>
+                                    </else>
+                                </if>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>1.0b3</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-nodeps</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>${dockerfile-maven-version}</version>
+                <executions>
+                    <execution>
+                    <id>build and push docker image</id>
+                    <goals>
+                        <goal>build</goal>
+                        <goal>push</goal>
+                    </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repository>${project.artifactId}</repository>
+                    <!-- <tag>${project.version}</tag> -->
+                    <buildArgs>
+                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                    </buildArgs>
+                    <imageTags>
+                        <imageTag>${project.version}</imageTag>
+                        <imageTag>latest</imageTag>
+                    </imageTags>
+                </configuration>
+            </plugin>
+
+            <!-- docker run telegram-modbot - -restart=always -v /dockerdata/:/src/main/data -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>1.2.1</version>
                 <executions>
                     <execution>
-                        <id>docker-package</id>
-                        <phase>package</phase>
+                        <id>stop existing container</id>
+                        <phase>install</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <successCodes>
+                                <successCode>0</successCode>
+                                <successCode>1</successCode>
+                            </successCodes>
+                            <workingDirectory>${project.basedir}</workingDirectory> 
                             <executable>docker</executable>
-                            <workingDirectory>${project.basedir}</workingDirectory>
                             <arguments>
-                                <argument>build</argument>
-                                <argument>.</argument>
-                                <argument>-t</argument>
-                                <argument>${project.groupId}/${project.artifactId}:${project.version}</argument>
-                                <argument>--build-arg</argument>
-                                <argument>JAR_FILE=target/dependency/${project.artifactId}-${project.version}.jar</argument>
+                                <!-- <argument>docker</argument> -->
+                                <argument>stop</argument>
+                                <argument>obibital-platform</argument>
                             </arguments>
                         </configuration>
-                    </execution>
+                    </execution>      
+                    <execution>
+                        <id>remove existing container</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <successCodes>
+                                <successCode>0</successCode>
+                                <successCode>1</successCode>
+                            </successCodes>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>docker</executable>
+                            <arguments>
+                                <!-- <argument>docker</argument> -->
+                                <argument>rm</argument>
+                                <argument>obibital-platform</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>      
+                    <execution>
+                        <id>create new container</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>docker</executable>
+                            <arguments>
+                                <!-- <argument>docker</argument> -->
+                                <argument>run</argument>
+                                <argument>--name</argument>
+                                <argument>obibital-platform</argument>
+                                <argument>-it</argument>
+                                <argument>--mount</argument>
+                                <argument>type=bind,source=D:\Files\Projects\Programming\VersionControlled\TelegramModerationBot\dockerdata,target=/src/main/data</argument>
+                                <argument>--detach</argument>
+                                <argument>telegram-modbot</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>                          
                 </executions>
             </plugin>
         </plugins>
