@@ -21,12 +21,34 @@ import com.skirmisher.data.*;
 public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
 
     Long groupId = 0l;
+    Long modChatId = 0l;
+    ArrayList<Long> admins = new ArrayList<>();
 
     @Override
     public void onUpdateReceived(Update update) {
         Context context = new Context();
 
         System.out.println(update);
+
+        //switch on chat ID
+        if(update.getMessage().getChatId().equals(groupId)) {
+            StickerSpam.spamCheck(context, update, this);
+
+            Commands.command(context, update, this);
+    
+            StickerPackBanner.checkValidity(context, update, this);
+
+            NewJoinRestrictions.manageNewJoin(context, update, this);
+            //message in the group, process as normal
+        } else if (admins.contains(update.getMessage().getChatId())){
+            //message from an approved admin, permit command interface
+            AdminInterface.run(context, update, this);
+        } else if (update.getMessage().getChatId().equals(modChatId)) {
+            //message in the mod chat, permit command interface
+            AdminInterface.run(context, update, this);
+        }
+
+
         //bot only intended to run in one group at a time
         if(!update.getMessage().getChatId().equals(groupId)){
             System.out.println("Someone has attempted to access the bot from outside the intended group."  + "\n" +
@@ -111,6 +133,10 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
             for(ConfigBean bean : config){
                 if(bean.getElement().equals("groupId")){
                     groupId = Long.parseLong(bean.getValue());
+                }
+
+                if(bean.getElement().equals("modChatId")){
+                    modChatId = Long.parseLong(bean.getValue());
                 }
             }
         } catch (IOException e){
