@@ -1,4 +1,4 @@
-FROM  arm32v7/adoptopenjdk:11-jre-hotspot
+FROM openjdk:8-jre
 
 ARG JAR_FILE
 COPY target/telegram-modbot.jar /telegram-modbot.jar
