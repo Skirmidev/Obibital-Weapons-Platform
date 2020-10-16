@@ -6,7 +6,7 @@
     <groupId>com.skirmisher</groupId>
     <artifactId>telegram-modbot</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -139,7 +139,6 @@
                 </executions>
                 <configuration>
                     <repository>${project.artifactId}</repository>
-                    <!-- <tag>${project.version}</tag> -->
                     <buildArgs>
                         <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
                     </buildArgs>
@@ -150,7 +149,6 @@
                 </configuration>
             </plugin>
 
-            <!-- docker run telegram-modbot - -restart=always -v /dockerdata/:/src/main/data -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -170,7 +168,6 @@
                             <workingDirectory>${project.basedir}</workingDirectory> 
                             <executable>docker</executable>
                             <arguments>
-                                <!-- <argument>docker</argument> -->
                                 <argument>stop</argument>
                                 <argument>obibital-platform</argument>
                             </arguments>
@@ -190,7 +187,6 @@
                             <workingDirectory>${project.basedir}</workingDirectory>
                             <executable>docker</executable>
                             <arguments>
-                                <!-- <argument>docker</argument> -->
                                 <argument>rm</argument>
                                 <argument>obibital-platform</argument>
                             </arguments>
@@ -206,7 +202,6 @@
                             <workingDirectory>${project.basedir}</workingDirectory>
                             <executable>docker</executable>
                             <arguments>
-                                <!-- <argument>docker</argument> -->
                                 <argument>run</argument>
                                 <argument>--name</argument>
                                 <argument>obibital-platform</argument>
