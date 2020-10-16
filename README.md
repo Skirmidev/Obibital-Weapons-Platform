@@ -2,22 +2,18 @@
 A moderation bot built for Telegram
 
 ## Configuration:
-Please refer to the samples in `src/main/resources/Samples` provided.
+Please refer to the samples in `src/main/data/Samples` provided.
 
  the config.csv must have the following data:  
  botusername - the username of your bot  
  bottoken - the token provided by godfatherbot
- groupId - the group the bot is intended to function in (your own userId if you wish to play with it directly)
+ groupId - the group the bot is intended to function in. This must be a supergroup (see telegram documentation).
 
-*Configured files should be placed in `src/main/resources`*
+*Configured files should be placed in `src/main/data`*
 
-## Building the bot:
-`mvn clean install` run in the root directory.
+ # Building & Running the bot
+The current pom configuration requires a local docker registry and running daemon to build succesfully.
 
-## Running the bot
+Upon running `mvn clean install` any existing bot container will be removed, and a new one will replace it, automatically binding to the data path. The container name will be `obibital-platform`
 
-java -jar ./target/telegram-modbot-0.0.1.jar
-
-##docker running the bot INDEV
-
- docker run -it --mount type=bind,source=D:\Files\Projects\Programming\VersionControlled\TelegramModerationBot\dockerdata,target=/src/main/data telegram-modbot
+Modification of the pom can disable these additional steps
