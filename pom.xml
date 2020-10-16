@@ -212,7 +212,7 @@
                                 <argument>obibital-platform</argument>
                                 <argument>-it</argument>
                                 <argument>--mount</argument>
-                                <argument>type=bind,source=D:\Files\Projects\Programming\VersionControlled\TelegramModerationBot\dockerdata,target=/src/main/data</argument>
+                                <argument>type=bind,source=${project.basedir}\dockerdata,target=/src/main/data</argument>
                                 <argument>--detach</argument>
                                 <argument>telegram-modbot</argument>
                             </arguments>
