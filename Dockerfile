@@ -1,4 +1,4 @@
-FROM openjdk:8-jre
+FROM openjdk:7-jre-alpine
 
 ARG JAR_FILE
 COPY target/telegram-modbot.jar /telegram-modbot.jar
