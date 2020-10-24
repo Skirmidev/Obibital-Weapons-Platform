@@ -1,7 +1,6 @@
 package com.skirmisher.obibital;
 
 import com.skirmisher.processors.*;
-import com.skirmisher.data.*;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class ModuleControl {
@@ -12,16 +11,17 @@ public class ModuleControl {
 
     public static void runChatModules(Context context, Update update, ObibitalWeaponsPlatform bot){
         
+
+        if(stickerPackBanner) {
+            StickerPackBanner.checkValidity(context, update, bot);
+        }
+
         if(stickerSpam) {
             StickerSpam.spamCheck(context, update, bot);
         }
 
         if(commands) {
             Commands.command(context, update, bot);
-        }
-
-        if(stickerPackBanner) {
-            StickerPackBanner.checkValidity(context, update, bot);
         }
 
         if(newJoinRestrictions) {

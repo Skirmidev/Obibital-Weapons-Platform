@@ -54,19 +54,10 @@ public class StickerPackBanner {
         if(bannedPacks.contains(packId)){
             System.out.println("StickerPackBanner:: Pack" + packId + "is already banned - how did this get through?");
         } else {
-            try {
-                List<BannedStickerBean> bannedBeans = DBLoader.GetBannedStickers();
-                BannedStickerBean newBan = new BannedStickerBean();
-                newBan.setPackId(packId);
-                bannedBeans.add(newBan);
+            DBLoader.banSticker(packId);
 
-                DBLoader.updateBannedStickers(bannedBeans);
-
-                System.out.println("StickerPackBanner:: Pack" + packId + " has been banned");
-                reloadBannedPacks();
-            } catch (IOException e){
-                e.printStackTrace();
-            }
+            System.out.println("StickerPackBanner:: Pack" + packId + " has been banned");
+            reloadBannedPacks();
         }
     }
 }

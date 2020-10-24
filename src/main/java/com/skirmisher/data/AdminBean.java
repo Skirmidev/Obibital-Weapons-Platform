@@ -7,8 +7,4 @@ import lombok.Data;
 public class AdminBean {
     @CsvBindByName(column = "userId")
     Long userId;
-
-    AdminBean(Long userId){
-        userId = this.userId;
-    }
 }

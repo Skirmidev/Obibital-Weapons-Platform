@@ -1,21 +1,13 @@
 package com.skirmisher.obibital;
 
-import com.opencsv.CSVReader;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import sun.security.krb5.Config;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-import com.skirmisher.processors.*;
 import com.skirmisher.data.*;
 
 public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
@@ -28,6 +20,7 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Context context = new Context();
 
+        System.out.println("ObibitalWeaponsPlatform:: New Update Received");
         System.out.println(update);
 
         //switch on chat ID
