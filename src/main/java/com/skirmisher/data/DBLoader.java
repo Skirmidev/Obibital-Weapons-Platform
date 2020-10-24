@@ -52,6 +52,43 @@ public class DBLoader {
         }
     }
 
+    public static String configValue(String value){
+        try {
+            List<ConfigBean> config = loadConfig();
+
+            for(ConfigBean bean : config){
+                if(bean.getElement().equals(value)){
+                    return bean.getValue();
+                }
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        System.out.println("FAILEDTOLOAD: " + value);
+        return "FAILEDTOLOAD: " + value;
+    }
+
+    public static void updateConfigValue(String elementToUpdate, String value){
+        if(elementToUpdate == "botusername" || elementToUpdate == "bottoken" ){
+            return;
+        }
+        try {
+            List<ConfigBean> config = loadConfig();
+            List<ConfigBean> updatedConfig = new ArrayList<ConfigBean>();
+
+            for(ConfigBean bean : config){
+                if(bean.getElement().equals(elementToUpdate)){
+                    bean.setValue(value);
+                }
+                updatedConfig.add(bean);
+            }
+
+            saveConfig(updatedConfig);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     ///////////////////////////////////////////
     // Banned Sticker Packs                  //
     ///////////////////////////////////////////
