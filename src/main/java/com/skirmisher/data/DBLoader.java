@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
+import com.skirmisher.data.beans.*;
 
 public class DBLoader {
     static String dataPath = "src/main/data/";
@@ -54,7 +55,19 @@ public class DBLoader {
     ///////////////////////////////////////////
     // Banned Sticker Packs                  //
     ///////////////////////////////////////////
-    public static List<BannedStickerBean> GetBannedStickers() throws IOException {
+    public static List<String> GetBannedStickers() throws IOException {
+
+        List<BannedStickerBean> bannedBeans = GetBannedStickerBeans();
+
+        ArrayList<String> bannedPacks = new ArrayList<>();
+        for(BannedStickerBean bean : bannedBeans){
+            bannedPacks.add(bean.getPackId());
+        }
+
+        return bannedPacks;
+    }
+
+    public static List<BannedStickerBean> GetBannedStickerBeans() throws IOException {
         Path myPath = Paths.get(dataPath + "bannedStickers.csv");
 
         try (BufferedReader br = Files.newBufferedReader(myPath,
@@ -78,12 +91,10 @@ public class DBLoader {
 
     public static void banStickers(List<String> packsToBan) {
         try{
-            List<BannedStickerBean> currentlyBanned = GetBannedStickers();
+            List<BannedStickerBean> currentlyBanned = GetBannedStickerBeans();
 
             for(String pack : packsToBan){
-                BannedStickerBean newBean = new BannedStickerBean();
-                newBean.setPackId(pack);
-                currentlyBanned.add(newBean);
+                currentlyBanned.add(new BannedStickerBean(pack));
             }
 
             Writer writer = new FileWriter(dataPath + "bannedStickers.csv");
@@ -97,16 +108,34 @@ public class DBLoader {
 
     public static void banSticker(String packToBan) {
         try{
-            List<BannedStickerBean> currentlyBanned = GetBannedStickers();
+            List<BannedStickerBean> currentlyBanned = GetBannedStickerBeans();
 
             
-            BannedStickerBean newBean = new BannedStickerBean();
-            newBean.setPackId(packToBan);
-            currentlyBanned.add(newBean);
+            currentlyBanned.add(new BannedStickerBean(packToBan));
 
             Writer writer = new FileWriter(dataPath + "bannedStickers.csv");
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             beanToCsv.write(currentlyBanned);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void unbanSticker(String packToUnban) {
+        try{
+            List<String> currentlyBanned = GetBannedStickers();
+
+            currentlyBanned.remove(packToUnban);
+
+            List<BannedStickerBean> bannedBeans = new ArrayList<BannedStickerBean>();
+            for(String pack : currentlyBanned){
+                bannedBeans.add(new BannedStickerBean(pack));
+            }
+
+            Writer writer = new FileWriter(dataPath + "bannedStickers.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            beanToCsv.write(bannedBeans);
             writer.close();
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
             e.printStackTrace();
@@ -168,16 +197,13 @@ public class DBLoader {
             if (admins.contains(id)){
                 // admin already in list, abort
             } else {
+                adminBeans.add(new AdminBean(id));
 
-            AdminBean newBean = new AdminBean();
-            newBean.setUserId(id);
-            adminBeans.add(newBean);
-
-            Writer writer = new FileWriter(dataPath + "admin.csv");
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-            
-            beanToCsv.write(adminBeans);
-            writer.close();
+                Writer writer = new FileWriter(dataPath + "admin.csv");
+                StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+                
+                beanToCsv.write(adminBeans);
+                writer.close();
             }
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
             e.printStackTrace();
@@ -208,7 +234,7 @@ public class DBLoader {
 
             if (admins.contains(id)){
                 // admin present in list, remove themelse 
-                adminBeans.remove(adminBeans.indexOf(id));
+                adminBeans.remove(id);
             } 
 
             Writer writer = new FileWriter(dataPath + "admin.csv");

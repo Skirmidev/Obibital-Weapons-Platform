@@ -12,7 +12,7 @@ import com.skirmisher.obibital.Context;
 import com.skirmisher.data.*;
 
 public class StickerPackBanner {
-    static ArrayList<String> bannedPacks = new ArrayList<>();
+    static List<String> bannedPacks = new ArrayList<>();
 
     public static Context checkValidity(Context context, Update update, ObibitalWeaponsPlatform bot){
         System.out.println("StickerPackBanner:: stickerPackBannner");
@@ -38,13 +38,9 @@ public class StickerPackBanner {
 
     public static void reloadBannedPacks(){    
         try {
-            List<BannedStickerBean> bannedBeans = DBLoader.GetBannedStickers();
-            System.out.println("StickerPackBanner:: Loaded: " + bannedBeans.toString());
-            bannedPacks = new ArrayList<>();
-    
-            for(BannedStickerBean bean : bannedBeans){
-                bannedPacks.add(bean.getPackId());
-            }
+            List<String> bannedBeans = DBLoader.GetBannedStickers();
+            System.out.println("StickerPackBanner:: Loaded: " + bannedBeans);
+            bannedPacks = bannedBeans;
         } catch (IOException e){
             e.printStackTrace();
         }
