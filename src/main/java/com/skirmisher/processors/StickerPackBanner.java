@@ -12,7 +12,7 @@ import com.skirmisher.obibital.Context;
 import com.skirmisher.data.*;
 
 public class StickerPackBanner {
-    static ArrayList<String> bannedPacks = new ArrayList<>();
+    static List<String> bannedPacks = new ArrayList<>();
 
     public static Context checkValidity(Context context, Update update, ObibitalWeaponsPlatform bot){
         System.out.println("StickerPackBanner:: stickerPackBannner");
@@ -38,13 +38,9 @@ public class StickerPackBanner {
 
     public static void reloadBannedPacks(){    
         try {
-            List<BannedStickerBean> bannedBeans = DBLoader.GetBannedStickers();
-            System.out.println("StickerPackBanner:: Loaded: " + bannedBeans.toString());
-            bannedPacks = new ArrayList<>();
-    
-            for(BannedStickerBean bean : bannedBeans){
-                bannedPacks.add(bean.getPackId());
-            }
+            List<String> bannedBeans = DBLoader.GetBannedStickers();
+            System.out.println("StickerPackBanner:: Loaded: " + bannedBeans);
+            bannedPacks = bannedBeans;
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -54,19 +50,10 @@ public class StickerPackBanner {
         if(bannedPacks.contains(packId)){
             System.out.println("StickerPackBanner:: Pack" + packId + "is already banned - how did this get through?");
         } else {
-            try {
-                List<BannedStickerBean> bannedBeans = DBLoader.GetBannedStickers();
-                BannedStickerBean newBan = new BannedStickerBean();
-                newBan.setPackId(packId);
-                bannedBeans.add(newBan);
+            DBLoader.banSticker(packId);
 
-                DBLoader.updateBannedStickers(bannedBeans);
-
-                System.out.println("StickerPackBanner:: Pack" + packId + " has been banned");
-                reloadBannedPacks();
-            } catch (IOException e){
-                e.printStackTrace();
-            }
+            System.out.println("StickerPackBanner:: Pack" + packId + " has been banned");
+            reloadBannedPacks();
         }
     }
 }

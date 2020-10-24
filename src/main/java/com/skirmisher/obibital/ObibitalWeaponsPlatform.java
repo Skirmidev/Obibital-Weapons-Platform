@@ -1,21 +1,11 @@
 package com.skirmisher.obibital;
 
-import com.opencsv.CSVReader;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import sun.security.krb5.Config;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
-import com.skirmisher.processors.*;
 import com.skirmisher.data.*;
 
 public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
@@ -28,6 +18,7 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Context context = new Context();
 
+        System.out.println("ObibitalWeaponsPlatform:: New Update Received");
         System.out.println(update);
 
         //switch on chat ID
@@ -45,45 +36,13 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return config("botusername");
+        return DBLoader.configValue("botusername");
     }
 
 
     @Override
     public String getBotToken() {
-        return config("bottoken");
-    }
-
-    public String config(String element){
-        try {
-            List<ConfigBean> config = DBLoader.loadConfig();
-
-            for(ConfigBean bean : config){
-                if(bean.getElement().equals(element)){
-                    return bean.getValue();
-                }
-            }
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        System.out.println("FAILEDTOLOAD: " + element);
-        return "FAILEDTOLOAD: " + element;
-    }
-
-    public void updateConfig(String element, String value){
-        try {
-            List<ConfigBean> config = DBLoader.loadConfig();
-
-            for(ConfigBean bean : config){
-                if(bean.getElement().equals(element)){
-                    bean.setValue(value);
-                }
-            }
-
-            DBLoader.saveConfig(config);
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+        return DBLoader.configValue("bottoken");
     }
 
     public void send(SendMessage message){
@@ -102,21 +61,8 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     }
 
     public void reloadConfig(){
-        try {
-            List<ConfigBean> config = DBLoader.loadConfig();
-
-            for(ConfigBean bean : config){
-                if(bean.getElement().equals("groupId")){
-                    groupId = Long.parseLong(bean.getValue());
-                }
-
-                if(bean.getElement().equals("modChatId")){
-                    modChatId = Long.parseLong(bean.getValue());
-                }
-            }
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+        groupId = Long.parseLong(DBLoader.configValue("groupId"));
+        modChatId = Long.parseLong(DBLoader.configValue("modChatId"));
     }
 }
 
