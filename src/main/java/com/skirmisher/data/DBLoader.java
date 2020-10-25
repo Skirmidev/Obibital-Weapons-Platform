@@ -15,14 +15,24 @@ import com.skirmisher.data.beans.*;
 
 public class DBLoader {
     static String dataPath = "src/main/data/";
+
+    static String configFile = "config.csv";
+    static String adminsFile = "admins.csv";
+    static String bannedStickersFile = "bannedStickers.csv";
+    static String modulesFile = "modules.csv";
+
+    static Path configPath = Paths.get(dataPath+configFile);
+    static Path adminsPath = Paths.get(dataPath+adminsFile);
+    static Path bannedStickersPath = Paths.get(dataPath+bannedStickersFile);
+    static Path modulesPath = Paths.get(dataPath+modulesFile);
     
     ///////////////////////////////////////////
     // Config                                //
     ///////////////////////////////////////////
-    public static List<ConfigBean> loadConfig() throws IOException {
-        Path myPath = Paths.get(dataPath + "config.csv");
+    public static List<ConfigBean> loadConfig() {
+        List<ConfigBean> config = new ArrayList<>();
 
-        try (BufferedReader br = Files.newBufferedReader(myPath,
+        try (BufferedReader br = Files.newBufferedReader(configPath,
                 StandardCharsets.UTF_8)) {
 
             HeaderColumnNameMappingStrategy<ConfigBean> strategy
@@ -35,15 +45,18 @@ public class DBLoader {
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
 
-            List<ConfigBean> config = csvToBean.parse();
+            config = csvToBean.parse();
 
-            return config;
+            
+        } catch (IOException e){
+            e.printStackTrace();
         }
+        return config;
     }
 
     public static void saveConfig(List<ConfigBean> input) {
         try{
-            Writer writer = new FileWriter(dataPath + "config.csv");
+            Writer writer = new FileWriter(dataPath+configFile);
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             beanToCsv.write(input);
             writer.close();
@@ -53,16 +66,12 @@ public class DBLoader {
     }
 
     public static String configValue(String value){
-        try {
-            List<ConfigBean> config = loadConfig();
+        List<ConfigBean> config = loadConfig();
 
-            for(ConfigBean bean : config){
-                if(bean.getElement().equals(value)){
-                    return bean.getValue();
-                }
+        for(ConfigBean bean : config){
+            if(bean.getElement().equals(value)){
+                return bean.getValue();
             }
-        } catch (IOException e){
-            e.printStackTrace();
         }
         System.out.println("FAILEDTOLOAD: " + value);
         return "FAILEDTOLOAD: " + value;
@@ -72,27 +81,23 @@ public class DBLoader {
         if(elementToUpdate == "botusername" || elementToUpdate == "bottoken" ){
             return;
         }
-        try {
-            List<ConfigBean> config = loadConfig();
-            List<ConfigBean> updatedConfig = new ArrayList<ConfigBean>();
+        List<ConfigBean> config = loadConfig();
+        List<ConfigBean> updatedConfig = new ArrayList<ConfigBean>();
 
-            for(ConfigBean bean : config){
-                if(bean.getElement().equals(elementToUpdate)){
-                    bean.setValue(value);
-                }
-                updatedConfig.add(bean);
+        for(ConfigBean bean : config){
+            if(bean.getElement().equals(elementToUpdate)){
+                bean.setValue(value);
             }
-
-            saveConfig(updatedConfig);
-        } catch (IOException e){
-            e.printStackTrace();
+            updatedConfig.add(bean);
         }
+
+        saveConfig(updatedConfig);
     }
 
     ///////////////////////////////////////////
     // Banned Sticker Packs                  //
     ///////////////////////////////////////////
-    public static List<String> GetBannedStickers() throws IOException {
+    public static List<String> GetBannedStickers() {
 
         List<BannedStickerBean> bannedBeans = GetBannedStickerBeans();
 
@@ -104,10 +109,10 @@ public class DBLoader {
         return bannedPacks;
     }
 
-    public static List<BannedStickerBean> GetBannedStickerBeans() throws IOException {
-        Path myPath = Paths.get(dataPath + "bannedStickers.csv");
+    public static List<BannedStickerBean> GetBannedStickerBeans(){
+        List<BannedStickerBean> bannedPacks = new ArrayList<BannedStickerBean>();
 
-        try (BufferedReader br = Files.newBufferedReader(myPath,
+        try (BufferedReader br = Files.newBufferedReader(bannedStickersPath,
                 StandardCharsets.UTF_8)) {
 
             HeaderColumnNameMappingStrategy<BannedStickerBean> strategy
@@ -120,73 +125,96 @@ public class DBLoader {
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
 
-            List<BannedStickerBean> bannedPacks = csvToBean.parse();
-
-            return bannedPacks;
+            bannedPacks = csvToBean.parse();
+        } catch (IOException e){
+            e.printStackTrace();
         }
+        return bannedPacks;
     }
 
-    public static void banStickers(List<String> packsToBan) {
+    public static boolean banStickers(List<String> packsToBan) {
+        boolean success = false;
         try{
             List<BannedStickerBean> currentlyBanned = GetBannedStickerBeans();
+
+            for(BannedStickerBean bannedPack : currentlyBanned){
+                if(packsToBan.contains(bannedPack.getPackId())){
+                    packsToBan.remove(bannedPack.getPackId());
+                }
+            }
 
             for(String pack : packsToBan){
                 currentlyBanned.add(new BannedStickerBean(pack));
+                success = true;
             }
 
-            Writer writer = new FileWriter(dataPath + "bannedStickers.csv");
+            Writer writer = new FileWriter(dataPath + bannedStickersFile);
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             beanToCsv.write(currentlyBanned);
             writer.close();
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
             e.printStackTrace();
         }
+        return success;
     }
 
-    public static void banSticker(String packToBan) {
+    public static boolean banSticker(String packToBan) {
+        boolean success = false;
         try{
             List<BannedStickerBean> currentlyBanned = GetBannedStickerBeans();
 
-            
-            currentlyBanned.add(new BannedStickerBean(packToBan));
+            for(BannedStickerBean bean : currentlyBanned){
+                if (bean.getPackId().equals(packToBan)){
+                    return success;
+                }
+            }
 
-            Writer writer = new FileWriter(dataPath + "bannedStickers.csv");
+            currentlyBanned.add(new BannedStickerBean(packToBan));
+            success=true;
+
+            Writer writer = new FileWriter(dataPath + bannedStickersFile);
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             beanToCsv.write(currentlyBanned);
             writer.close();
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
             e.printStackTrace();
         }
+        return success;
     }
 
-    public static void unbanSticker(String packToUnban) {
+    public static boolean unbanSticker(String packToUnban) {
+        boolean success = false;
         try{
             List<String> currentlyBanned = GetBannedStickers();
 
-            currentlyBanned.remove(packToUnban);
+            if(currentlyBanned.remove(packToUnban)){
+                success = true;
+            } else {
+                return false;
+            }
 
             List<BannedStickerBean> bannedBeans = new ArrayList<BannedStickerBean>();
             for(String pack : currentlyBanned){
                 bannedBeans.add(new BannedStickerBean(pack));
             }
 
-            Writer writer = new FileWriter(dataPath + "bannedStickers.csv");
+            Writer writer = new FileWriter(dataPath + bannedStickersFile);
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             beanToCsv.write(bannedBeans);
             writer.close();
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
             e.printStackTrace();
         }
+        return success;
     }
 
     ///////////////////////////////////////////
     // Approved Admin List                   //
     ///////////////////////////////////////////
-    public static List<Long> getAdmins() throws IOException {
+    public static List<Long> getAdmins(){
         ArrayList<Long> admins = new ArrayList<>();
-        Path myPath = Paths.get(dataPath + "admins.csv");
 
-        try (BufferedReader br = Files.newBufferedReader(myPath,
+        try (BufferedReader br = Files.newBufferedReader(adminsPath,
                 StandardCharsets.UTF_8)) {
 
             HeaderColumnNameMappingStrategy<AdminBean> strategy
@@ -204,17 +232,19 @@ public class DBLoader {
             for(AdminBean ad: adminBeans) {
                 admins.add(ad.getUserId());
             }
-
-            return admins;
+        } catch (IOException e){
+            e.printStackTrace();
         }
+        return admins;
     }
 
-    public static void addAdmin(Long id) throws IOException {
-        Path myPath = Paths.get(dataPath + "admins.csv");
+    public static boolean addAdmin(Long id) {
+        System.out.println("DBLoader:: addAdmin:: " + id);
         List<AdminBean> adminBeans = new ArrayList<>();
         List<Long> admins = new ArrayList<Long>();
+        boolean success = false;
 
-        try (BufferedReader br = Files.newBufferedReader(myPath, StandardCharsets.UTF_8)) {
+        try (BufferedReader br = Files.newBufferedReader(adminsPath, StandardCharsets.UTF_8)) {
 
             HeaderColumnNameMappingStrategy<AdminBean> strategy
                     = new HeaderColumnNameMappingStrategy<>();
@@ -235,8 +265,9 @@ public class DBLoader {
                 // admin already in list, abort
             } else {
                 adminBeans.add(new AdminBean(id));
+                success=true;
 
-                Writer writer = new FileWriter(dataPath + "admin.csv");
+                Writer writer = new FileWriter(dataPath + adminsFile);
                 StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
                 
                 beanToCsv.write(adminBeans);
@@ -245,14 +276,16 @@ public class DBLoader {
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
             e.printStackTrace();
         }
+        return success;
     }
 
-    public static void removeAdmin(Long id) throws IOException {
-        Path myPath = Paths.get(dataPath + "admins.csv");
+    public static boolean removeAdmin(Long id) {
+        System.out.println("DBLoader:: removeAdmin:: " + id);
         List<AdminBean> adminBeans = new ArrayList<>();
-        List<Long> admins = new ArrayList<Long>();
+        boolean success = false;
+        List<AdminBean> newAdmins = new ArrayList<>();
 
-        try (BufferedReader br = Files.newBufferedReader(myPath, StandardCharsets.UTF_8)) {
+        try (BufferedReader br = Files.newBufferedReader(adminsPath, StandardCharsets.UTF_8)) {
 
             HeaderColumnNameMappingStrategy<AdminBean> strategy
                     = new HeaderColumnNameMappingStrategy<>();
@@ -266,21 +299,224 @@ public class DBLoader {
 
             adminBeans = csvToBean.parse();
             for(AdminBean ad: adminBeans) {
-                admins.add(ad.getUserId());
+                if(!ad.getUserId().equals(id)){
+                    newAdmins.add(ad);
+                } else {
+                    success=true;
+                }
             }
 
-            if (admins.contains(id)){
-                // admin present in list, remove themelse 
-                adminBeans.remove(id);
-            } 
-
-            Writer writer = new FileWriter(dataPath + "admin.csv");
+            Writer writer = new FileWriter(dataPath + adminsFile);
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             
-            beanToCsv.write(adminBeans);
+            beanToCsv.write(newAdmins);
             writer.close();
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
             e.printStackTrace();
         }
+        return success;
+    }
+
+    ///////////////////////
+    // Module Enablement //
+    ///////////////////////
+    public static String enableModule(String moduleToEnable){
+        System.out.println("DBLoader:: enableModule:: " + moduleToEnable);
+        List<ModuleBean> moduleBeans = getModules();
+        List<ModuleBean> newModules = new ArrayList<>();
+        String response = "";
+        boolean foundModule = false;
+        
+        for(ModuleBean mod: moduleBeans) {
+            if(mod.getModule().equals(moduleToEnable)){
+                foundModule = true;
+                if(mod.getEnabled()){
+                    //already enabled, say as much
+                    response = "module " + moduleToEnable + " is already enabled";
+                } else {
+                    mod.setEnabled(true);
+                    response = "success";
+                }
+            }
+            newModules.add(mod);
+        }
+
+        if(!foundModule){
+            //module was not found
+            response = "module " + moduleToEnable + " was not found. Please use /addModule if this is in error";
+        }
+
+        
+        try{
+            Writer writer = new FileWriter(dataPath + modulesFile);
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+                
+            beanToCsv.write(newModules);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+        
+        return response;
+    }
+
+    public static String disableModule(String moduleToDisable){
+        System.out.println("DBLoader:: disableModule:: " + moduleToDisable);
+        List<ModuleBean> moduleBeans = getModules();
+        List<ModuleBean> newModules = new ArrayList<>();
+        String response = "";
+        boolean foundModule = false;
+        
+        for(ModuleBean mod: moduleBeans) {
+            if(mod.getModule().equals(moduleToDisable)){
+                foundModule = true;
+                if(!mod.getEnabled()){
+                    //already enabled, say as much
+                    response = "module " + moduleToDisable + " is already disabled";
+                } else {
+                    mod.setEnabled(false);
+                    response = "module " + moduleToDisable + " has been disabled";
+                }
+            }
+            newModules.add(mod);
+        }
+
+        if(!foundModule){
+            //module was not found
+            response = "module " + moduleToDisable + " was not found. Please use /addModule if this is in error";
+        }
+
+        
+        try{
+            Writer writer = new FileWriter(dataPath + modulesFile);
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+                
+            beanToCsv.write(newModules);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+        
+        return response;
+    }
+
+    public static List<ModuleBean> getModules(){
+        System.out.println("DBLoader:: getModules:: ");
+        List<ModuleBean> modules = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(modulesPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<ModuleBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(ModuleBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(ModuleBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            modules = csvToBean.parse();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return modules;
+    }
+
+    public static boolean getModuleStatus(String moduleToCheck){
+        System.out.println("DBLoader:: getModuleStatus:: " + moduleToCheck);
+        //caveat: will return false if no module found
+        List<ModuleBean> modules = getModules();
+        boolean status = false;
+
+        for(ModuleBean mod : modules){
+            if(mod.getModule().equals(moduleToCheck)){
+                status = mod.getEnabled();
+            }
+        }
+
+        return status;
+    }
+
+    public static boolean addModule(String moduleToAdd){
+        //WARNING: should be in default config, not being present is an error
+        System.out.println("DBLoader:: addModule:: " + moduleToAdd);
+        List<ModuleBean> moduleBeans = new ArrayList<>();
+        List<String> modules = new ArrayList<>();
+        boolean success = false;
+
+        try (BufferedReader br = Files.newBufferedReader(adminsPath, StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<ModuleBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(ModuleBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(AdminBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            moduleBeans = csvToBean.parse();
+            for(ModuleBean mod: moduleBeans) {
+                modules.add(mod.getModule());
+            }
+
+            if (modules.contains(moduleToAdd)){
+                // module already in list, abort
+            } else {
+                moduleBeans.add(new ModuleBean(moduleToAdd, false));
+                success=true;
+
+                Writer writer = new FileWriter(dataPath + modulesFile);
+                StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+                
+                beanToCsv.write(moduleBeans);
+                writer.close();
+            }
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
+    public static boolean removeModule(String moduleToRemove){
+        //WARNING: should be in default config, not being present is an error
+        System.out.println("DBLoader:: removeModule:: " + moduleToRemove);
+        List<ModuleBean> moduleBeans = new ArrayList<>();
+        boolean success = false;
+        List<ModuleBean> newModules = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(modulesPath, StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<ModuleBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(ModuleBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(AdminBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+                moduleBeans = csvToBean.parse();
+            for(ModuleBean mod: moduleBeans) {
+                if(!mod.getModule().equals(moduleToRemove)){
+                    newModules.add(mod);
+                } else {
+                    success=true;
+                }
+            }
+
+            Writer writer = new FileWriter(dataPath + adminsFile);
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(newModules);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+        return success;
     }
 }

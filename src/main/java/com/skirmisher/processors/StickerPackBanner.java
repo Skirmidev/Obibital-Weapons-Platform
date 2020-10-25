@@ -4,7 +4,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import com.skirmisher.obibital.ObibitalWeaponsPlatform;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.IOException;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import com.skirmisher.obibital.Context;
@@ -36,14 +35,10 @@ public class StickerPackBanner {
         return context;
     }
 
-    public static void reloadBannedPacks(){    
-        try {
-            List<String> bannedBeans = DBLoader.GetBannedStickers();
-            System.out.println("StickerPackBanner:: Loaded: " + bannedBeans);
-            bannedPacks = bannedBeans;
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+    public static void reloadBannedPacks(){   
+        List<String> bannedBeans = DBLoader.GetBannedStickers();
+        System.out.println("StickerPackBanner:: Loaded: " + bannedBeans);
+        bannedPacks = bannedBeans;
     }
 
     public static void banNewSticker(String packId){ 

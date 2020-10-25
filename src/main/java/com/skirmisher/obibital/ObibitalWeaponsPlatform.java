@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.skirmisher.data.*;
 
@@ -12,7 +13,7 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
 
     Long groupId = 0l;
     Long modChatId = 0l;
-    ArrayList<Long> admins = new ArrayList<>();
+    List<Long> admins = new ArrayList<>();
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -44,6 +45,10 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     public String getBotToken() {
         return DBLoader.configValue("bottoken");
     }
+    
+    public Long getModChatId() {
+        return modChatId;
+    }
 
     public void send(SendMessage message){
         try {
@@ -63,6 +68,7 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     public void reloadConfig(){
         groupId = Long.parseLong(DBLoader.configValue("groupId"));
         modChatId = Long.parseLong(DBLoader.configValue("modChatId"));
+        admins=DBLoader.getAdmins();
     }
 }
 

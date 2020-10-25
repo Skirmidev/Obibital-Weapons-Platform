@@ -1,7 +1,10 @@
 package com.skirmisher.obibital;
 
+import com.skirmisher.data.DBLoader;
 import com.skirmisher.processors.*;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import com.skirmisher.data.beans.ModuleBean;
+import java.util.List;
 
 public class ModuleControl {
     static boolean stickerSpam = true;
@@ -29,8 +32,23 @@ public class ModuleControl {
         }
     }
 
-    public static void reloadChatModules(){
-        //TODO: make an active commands bean
-
+    public static void reloadModules(){
+        List<ModuleBean> mods = DBLoader.getModules();
+        for(ModuleBean mod : mods){
+            switch(mod.getModule()){
+                case "stickerSpam":
+                    stickerSpam = mod.getEnabled();
+                    break;
+                case "commands":
+                    commands = mod.getEnabled();
+                    break;
+                case "stickerPackBanner":
+                    stickerPackBanner = mod.getEnabled();
+                    break;
+                case "newJoinRestrictions":
+                    newJoinRestrictions = mod.getEnabled();
+                    break;
+            }
+        }
     }
 }

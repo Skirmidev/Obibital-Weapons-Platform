@@ -31,7 +31,6 @@ public class NewJoinRestrictions {
 
 
             long ut1 = Instant.now().getEpochSecond();
-            System.out.println(ut1);
             managePerms.setUntilDate(Integer.parseInt(String.valueOf(ut1)) + 86400); //unix time, 1 day restriction
             managePerms.setChatId(update.getMessage().getChatId());
 
