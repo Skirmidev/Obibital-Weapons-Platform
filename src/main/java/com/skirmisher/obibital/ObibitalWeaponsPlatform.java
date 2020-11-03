@@ -49,6 +49,10 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     public Long getModChatId() {
         return modChatId;
     }
+    
+    public Long getGroupChatId() {
+        return groupId;
+    }
 
     public void send(SendMessage message){
         try {

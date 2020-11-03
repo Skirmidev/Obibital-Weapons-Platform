@@ -34,8 +34,6 @@ public class NewJoinRestrictions {
             managePerms.setUntilDate(Integer.parseInt(String.valueOf(ut1)) + 86400); //unix time, 1 day restriction
             managePerms.setChatId(update.getMessage().getChatId());
 
-            update.getMessage().getNewChatMembers();
-
             for(User user : update.getMessage().getNewChatMembers()){
                 managePerms.setUserId(user.getId());
                 System.out.println("NewJoinRestrictions:: Restricted new user: " + user.getUserName() + " - " + user.getId());

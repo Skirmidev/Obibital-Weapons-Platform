@@ -14,6 +14,7 @@ import com.skirmisher.obibital.ModuleControl;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.List;
+import java.time.*;
 
 public class AdminCommands {
     static char prefix = '/';
@@ -107,7 +108,12 @@ public class AdminCommands {
                         break;
                     case "/getBannedPacks":
                         getBannedPacks(update, bot);
-                        context.setResult("AdminCommands: unbanPack command");
+                        context.setResult("AdminCommands: getBnnnedPacks command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/createUnbanTimer":
+                        createUnbanTimer(update, bot, args);
+                        context.setResult("AdminCommands: createUnbanTimer command");
                         context.setBlockingResult(true);
                         break;
                     default:
@@ -544,5 +550,43 @@ public class AdminCommands {
 
         message.setText(response);
         bot.send(message);
+    }
+
+    //////////////////////////////////////////////////////////////
+    // /createUnbanTimer [userId] [durationVal] [durationField] //
+    //////////////////////////////////////////////////////////////
+    public static void createUnbanTimer(Update update, ObibitalWeaponsPlatform bot, String[] args){
+
+        if(args.length != 4){
+            SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+            message.setText("Incorrect Arguments Supplied. Please use the format /createUnbanTimer [userid] [durationValue] [durationField]");
+            bot.send(message);
+            return;
+        }
+
+        LocalDateTime expiryTime = LocalDateTime.now();
+        switch(args[3].toLowerCase()){
+            case "minutes":
+                expiryTime = expiryTime.plusMinutes(Long.parseLong(args[2]));
+                break;
+            case "days": 
+                expiryTime = expiryTime.plusDays(Long.parseLong(args[2]));
+                break;
+            case "weeks":
+                expiryTime = expiryTime.plusWeeks(Long.parseLong(args[2]));
+                break; 
+            case "months":
+                expiryTime = expiryTime.plusMonths(Long.parseLong(args[2]));
+                break; 
+            default:    
+                SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+                message.setText("Incorrect Arguments Supplied. durationField should be minutes, days, weeks, or months");
+                bot.send(message);
+                return;
+        }
+
+        DBLoader.addTimer("UNBAN", args[1], expiryTime);
+
+        System.out.println("Created Unban Timer");
     }
 }

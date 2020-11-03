@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 import com.skirmisher.data.beans.*;
+import java.time.*;
 
 public class DBLoader {
     static String dataPath = "src/main/data/";
@@ -518,5 +519,121 @@ public class DBLoader {
             e.printStackTrace();
         }
         return success;
+    }
+
+    ///////////////////////////////////////////
+    // Timers                                //
+    ///////////////////////////////////////////
+    static int timerId = 0;
+
+    public static List<TimerBean> getAllTimers() {
+        List<TimerBean> timerBeans = new ArrayList<>();
+        Path myPath = Paths.get(dataPath + "timers.csv");
+
+        // try {
+        //     CsvToBeanBuilder<TimerBean> beanBuilder = new CsvToBeanBuilder<>(new InputStreamReader(new FileInputStream(dataPath + "timers.csv")));
+        //     beanBuilder.withType(TimerBean.class);
+        //     timerBeans = beanBuilder.build().parse();
+        // } catch (FileNotFoundException e){
+        //     e.printStackTrace();
+        // }
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<TimerBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(TimerBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            timerBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return timerBeans;
+    }
+
+    public static List<TimerBean> getExpiredTimers() {
+        List<TimerBean> timerBeans = getAllTimers();
+        List<TimerBean> expiredBeans = new ArrayList<>();
+
+        for(TimerBean tim : timerBeans){
+            if(tim.getExpiry().isBefore(LocalDateTime.now())){
+                expiredBeans.add(tim);
+            }
+        }
+        return expiredBeans;
+    }
+
+    public static void addTimer(String action, String args, LocalDateTime time) {
+        List<TimerBean> timerBeans = getAllTimers();
+
+        timerBeans.add(new TimerBean(
+            timerId++,
+            action,
+            args,
+            time
+        ));
+
+        try{
+            Writer writer = new FileWriter(dataPath + "timers.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(timerBeans);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean removeTimer(int id) {
+        List<TimerBean> timerBeans = getAllTimers();
+        List<TimerBean> newBeans = new ArrayList<>();
+        Path myPath = Paths.get(dataPath + "timers.csv");
+        boolean success=false;
+
+        for(TimerBean tim : timerBeans){
+            if(tim.getTimerId() == id ){
+                success=true;
+            } else {
+                newBeans.add(tim);
+            }
+        }
+
+        if(success){
+            try{
+                Writer writer = new FileWriter(dataPath + "timers.csv");
+                StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+                
+                beanToCsv.write(newBeans);
+                writer.close();
+            } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return success;
+    }
+
+    public static void updateTimerId() {
+        //get timers
+        List<TimerBean> timerBeans = getAllTimers();
+        //find largest timer val
+        int largestVal = 0;
+        for(TimerBean tim : timerBeans){
+            if(tim.getTimerId() > largestVal){
+                largestVal = tim.getTimerId();
+            }
+        }
+        //add 1
+        largestVal++;
+        //timerId = above
+        timerId = largestVal;
     }
 }
