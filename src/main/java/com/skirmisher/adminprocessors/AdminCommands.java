@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.List;
 import java.time.*;
-import java.util.Arrays;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 
 public class AdminCommands {
     static char prefix = '/';
@@ -128,6 +128,26 @@ public class AdminCommands {
                         context.setResult("AdminCommands: getLogs command");
                         context.setBlockingResult(true);
                         break;
+                    case "/getalllogs":
+                        getAllLogs(update, bot);
+                        context.setResult("AdminCommands: getAllLogs command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/getlastweeklogs":
+                        getAllLogs(update, bot);
+                        context.setResult("AdminCommands: getLastWeekLogs command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/weekreport":
+                        getAllLogs(update, bot);
+                        context.setResult("AdminCommands: weekReport command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/getlogsbyuser":
+                        getLogsByUser(update, bot, args);
+                        context.setResult("AdminCommands: weekReport command");
+                        context.setBlockingResult(true);
+                        break;
                     case "/warn":
                         warn(update, bot, args);
                         context.setResult("AdminCommands: warn command");
@@ -154,7 +174,7 @@ public class AdminCommands {
         SendMessage message = new SendMessage()
                 .setChatId(update.getMessage().getChatId())
                 .setText(   "OBIBITAL WEAPONS PLATFORM V-0.0.1"  + "\n" +
-                            "The following admin command are available"  + "\n" +
+                            "The following admin command are available (not case sensitive)"  + "\n" +
                             "/help"  + "\n" +
                             "/addAdmin [userId]"  + "\n" +
                             "/removeAdmin [userId]"  + "\n" +
@@ -166,9 +186,18 @@ public class AdminCommands {
                             "/banPack [packId]"  + "\n" +
                             "/unbanPack [packId]"  + "\n" +
                             "/getBannedPacks"  + "\n" +
-                            "The following commands are for emergency use only"  + "\n" +
+                            "/getLogs"  + "\n" +
+                            "/getAllLogs"  + "\n" +
+                            "/getLastWeekLogs"  + "\n" +
+                            "/weekReport"  + "\n" +
+                            "/getLogsByUser [userId]"  + "\n" +
+                            "/warn [userId] [reason]"  + "\n" +
+                            "/ban [userId] [durationVal] [durationField] [reason]"  + "\n" +
+                            "" + "\n" + 
+                            "**The following commands are for emergency use only**"  + "\n" +
                             "/addModule [moduleName]"  + "\n" +
                             "/removeModule [moduleName]"  + "\n" +
+                            "/createUnbanTimer [userId] [durationVal] [durationField]"  + "\n" +
                             "");
 
         bot.send(message);
@@ -643,6 +672,22 @@ public class AdminCommands {
 
         bot.send(message);
     }
+    
+    ////////////////////////////////////////////////////////
+    // /getAllLogs //
+    ////////////////////////////////////////////////////////
+    public static void getAllLogs(Update update, ObibitalWeaponsPlatform bot){
+        
+        SendDocument doc = DBLoader.getLogsFile();
+        doc.setChatId(update.getMessage().getChatId());
+        doc.setReplyToMessageId(update.getMessage().getMessageId());
+
+        try{
+            bot.execute(doc);
+        } catch (TelegramApiException e){
+            e.printStackTrace();
+        }
+    }
 
     ////////////////////////////////////////////////////////
     // /ban [user] [durationVal] [durationField] [reason] //
@@ -779,6 +824,82 @@ public class AdminCommands {
             // please supply a valid username or userid
             message.setChatId(update.getMessage().getChatId())
             .setText("Please provide the correct input `/warn userid reason`");
+
+            bot.send(message);
+        }
+    }
+
+    //////////////////////
+    // /getLastWeekLogs //
+    //////////////////////
+    public static void getLastWeekLogs(Update update, ObibitalWeaponsPlatform bot){
+        SendDocument doc = DBLoader.getLogsFileInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
+        doc.setChatId(update.getMessage().getChatId());
+        doc.setReplyToMessageId(update.getMessage().getMessageId());
+
+        try{
+            bot.execute(doc);
+        } catch (TelegramApiException e){
+            e.printStackTrace();
+        }
+    }
+
+    /////////////////
+    // /weekReport //
+    /////////////////
+    public static void weekReport(Update update, ObibitalWeaponsPlatform bot){
+        List<StatisticBean> logs = DBLoader.getLogsInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
+
+        int warn = 0;
+        int ban = 0;
+        int ban_stickerpack = 0;
+
+
+        for(StatisticBean bean : logs){
+            switch(bean.getEvent()){
+                case "WARN":
+                    warn++;
+                    break;
+                case "BAN":
+                    ban++;
+                    break;
+                case "BAN_STICKERPACK":
+                    ban_stickerpack++;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        message.setText("Events in the last week:\n" + 
+            "Warnings: " + warn + "\n" +
+            "Bans: " + ban + "\n" +
+            "Stickerpack Bans: " + ban_stickerpack + "\n" 
+        );
+
+        bot.send(message);
+    }
+
+    //////////////////////
+    // /getLogsByUser [userId] //
+    //////////////////////
+    public static void getLogsByUser(Update update, ObibitalWeaponsPlatform bot, String[] args){
+        if(args.length > 1){
+            SendDocument doc = DBLoader.getLogsFileBySourceUser(args[1]);
+            doc.setChatId(update.getMessage().getChatId());
+            doc.setReplyToMessageId(update.getMessage().getMessageId());
+
+            try{
+                bot.execute(doc);
+            } catch (TelegramApiException e){
+                e.printStackTrace();
+            }
+        } else {
+            // please supply a valid username or userid
+            SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+            message.setChatId(update.getMessage().getChatId())
+            .setText("Please provide the correct input `/getLogsByUser [userId]`");
 
             bot.send(message);
         }

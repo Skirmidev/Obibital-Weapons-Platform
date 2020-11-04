@@ -11,6 +11,7 @@ public class ModuleControl {
     static boolean commands = true;
     static boolean stickerPackBanner = true;
     static boolean newJoinRestrictions = true;
+    static boolean nightTimeRestrictor = true;
 
     public static void runChatModules(Context context, Update update, ObibitalWeaponsPlatform bot){
         
@@ -30,6 +31,11 @@ public class ModuleControl {
         if(newJoinRestrictions) {
             NewJoinRestrictions.manageNewJoin(context, update, bot);
         }
+
+    
+        if(nightTimeRestrictor) {
+            NightTimeRestrictor.manageNewJoin(context, update, bot);
+        }
     }
 
     public static void reloadModules(){
@@ -47,6 +53,9 @@ public class ModuleControl {
                     break;
                 case "newJoinRestrictions":
                     newJoinRestrictions = mod.getEnabled();
+                    break;
+                case "nightTimeRestrictor":
+                    nightTimeRestrictor = mod.getEnabled();
                     break;
             }
         }
