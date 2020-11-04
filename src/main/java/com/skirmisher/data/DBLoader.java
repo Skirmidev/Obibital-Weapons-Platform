@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.ArrayList;
 import com.skirmisher.data.beans.*;
 import java.time.*;
+import java.util.Arrays;
 
 public class DBLoader {
     static String dataPath = "src/main/data/";
@@ -636,4 +637,182 @@ public class DBLoader {
         //timerId = above
         timerId = largestVal;
     }
+
+    
+    ///////////////////////////////////////////
+    // Statistics                            //
+    ///////////////////////////////////////////
+    public static void logEvent(String event, String sourceUser, String affectedUser, String notes) {
+        //Time, Event, SourceUser, AffectedUser, Notes
+        //TODO: refactor how we add new values to a file
+        Path myPath = Paths.get(dataPath + "statistics.csv");
+        List<StatisticBean> statBeans = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<StatisticBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(StatisticBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            statBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        StatisticBean newStat = new StatisticBean();
+        newStat.setTime(LocalDateTime.now());
+        newStat.setEvent(event);
+        newStat.setSourceUser(sourceUser);
+        newStat.setAffectedUser(affectedUser);
+        newStat.setNotes(notes);
+
+        statBeans.add(newStat);
+
+        try{
+            Writer writer = new FileWriter(dataPath + "statistics.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(statBeans);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static List<StatisticBean> getLogs() {
+        //by default returns last 5 events. 
+        Path myPath = Paths.get(dataPath + "statistics.csv");
+        List<StatisticBean> statBeans = new ArrayList<>();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<StatisticBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(StatisticBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            statBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(statBeans.size()-5 < 0){
+            returnBeans = statBeans.subList(0, statBeans.size());
+        } else {
+            returnBeans = statBeans.subList(statBeans.size()-5, statBeans.size());
+        }
+
+        return returnBeans;
+
+    }
+
+    public static void getLogsFile() {
+        //TODO: return a copy of the full csv file 
+    }
+
+    public static void getLogsFileBySourceUser(String userId) {
+        //return a csv file containing logs regarding said user
+    }
+
+    public static List<StatisticBean> getLogsByAffectedUser(String userId) {
+        Path myPath = Paths.get(dataPath + "statistics.csv");
+        List<StatisticBean> statBeans = new ArrayList<>();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<StatisticBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(StatisticBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            statBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for(StatisticBean bean : statBeans){
+            if(bean.getAffectedUser() == userId){
+                returnBeans.add(bean);
+            }
+        }
+
+        return returnBeans;
+        //returns the beans
+    }
+
+    public static List<StatisticBean> getLogsByAffectedUserAndEvents(String userId, String[] event) {
+        Path myPath = Paths.get(dataPath + "statistics.csv");
+        List<StatisticBean> statBeans = new ArrayList<>();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<StatisticBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(StatisticBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            statBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("IOException while trying to read file");
+        }
+
+        System.out.println("statbeans length: " + statBeans.size());
+        System.out.println("event length: " + event.length);
+
+        for(StatisticBean bean : statBeans){
+            System.out.println("gonna compare: " + bean.getAffectedUser() + " with " + userId);
+            if(bean.getAffectedUser().equals(userId)/* && Arrays.stream(event).anyMatch(bean.getEvent()::equals)*/){
+                System.out.println("found a bean for the userId");
+                for(int i = 0; i < event.length; i++){
+                    System.out.println("gonna compare: " + bean.getEvent() + " with " + event[i]);
+                    if(event[i].equals(bean.getEvent())){
+                        System.out.println("bean is eventy");
+                        returnBeans.add(bean);
+                    }
+                }
+                //returnBeans.add(bean);
+            }
+        }
+
+        return returnBeans;
+        //returns the beans
+    }
+
+    public static void getLogsFileByEvent(String event) {
+        //returns a csv file containing logs regarding said event
+    }
+
+    public static void getLogsInDateRange(String startDate, String endDate) {
+        //returns a csv file containing logs regarding said event
+    }
+    
 }

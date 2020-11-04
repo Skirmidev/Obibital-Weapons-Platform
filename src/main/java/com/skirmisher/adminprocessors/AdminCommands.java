@@ -1,6 +1,8 @@
 package com.skirmisher.adminprocessors;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 import com.skirmisher.obibital.ObibitalWeaponsPlatform;
 import com.skirmisher.processors.StickerPackBanner;
 
@@ -8,6 +10,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import com.skirmisher.data.DBLoader;
 import com.skirmisher.data.beans.ModuleBean;
+import com.skirmisher.data.beans.StatisticBean;
 import com.skirmisher.obibital.Context;
 import com.skirmisher.obibital.ModuleControl;
 
@@ -15,6 +18,8 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.List;
 import java.time.*;
+import java.util.Arrays;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 
 public class AdminCommands {
     static char prefix = '/';
@@ -44,6 +49,8 @@ public class AdminCommands {
                 //split the inputs
                 String[] args = update.getMessage().getText().split(" ");
 
+                args[0] = args[0].toLowerCase();
+
                 //this is a command. Switch to find out what it does.
                 switch(args[0]){ //add something here to split the string apart based on gaps
                     case "/help":
@@ -51,69 +58,84 @@ public class AdminCommands {
                         context.setResult("AdminCommands: Help command");
                         context.setBlockingResult(true);
                         break;
-                    case "/addAdmin":
+                    case "/addadmin":
                         addAdmin(update, bot, args);
                         context.setResult("AdminCommands: addAdmin command");
                         context.setBlockingResult(true);
                         break;
-                    case "/removeAdmin":
+                    case "/removeadmin":
                         removeAdmin(update, bot, args);
                         context.setResult("AdminCommands: removeAdmin command");
                         context.setBlockingResult(true);
                         break;
-                    case "/listAdmins":
+                    case "/listadmins":
                         listAdmins(update, bot);
                         context.setResult("AdminCommands: listAdmins command");
                         context.setBlockingResult(true);
                         break;
-                    case "/disableModule":
+                    case "/disablemodule":
                         disableModule(update, bot, args);
                         context.setResult("AdminCommands: disableModule command");
                         context.setBlockingResult(true);
                         break;
-                    case "/enableModule":
+                    case "/enablemodule":
                         enableModule(update, bot, args);
                         context.setResult("AdminCommands: enableModule command");
                         context.setBlockingResult(true);
                         break;
-                    case "/getModules":
+                    case "/getmodules":
                         getModules(update, bot);
                         context.setResult("AdminCommands: getModules command");
                         context.setBlockingResult(true);
                             break;
-                    case "/moduleStatus":
+                    case "/modulestatus":
                         moduleStatus(update, bot, args);
                         context.setResult("AdminCommands: getModules command");
                         context.setBlockingResult(true);
                         break;
-                    case "/addModule":
+                    case "/addmodule":
                         addModule(update, bot, args);
                         context.setResult("AdminCommands: addModule command");
                         context.setBlockingResult(true);
                         break;
-                    case "/removeModule":
+                    case "/removemodule":
                         removeModule(update, bot, args);
                         context.setResult("AdminCommands: removeModule command");
                         context.setBlockingResult(true);
                         break;
-                    case "/banPack":
+                    case "/banpack":
                         banPack(update, bot, args);
                         context.setResult("AdminCommands: banPack command");
                         context.setBlockingResult(true);
                         break;
-                    case "/unbanPack":
+                    case "/unbanpack":
                         unbanPack(update, bot, args);
                         context.setResult("AdminCommands: unbanPack command");
                         context.setBlockingResult(true);
                         break;
-                    case "/getBannedPacks":
+                    case "/getbannedpacks":
                         getBannedPacks(update, bot);
                         context.setResult("AdminCommands: getBnnnedPacks command");
                         context.setBlockingResult(true);
                         break;
-                    case "/createUnbanTimer":
+                    case "/createunbantimer":
                         createUnbanTimer(update, bot, args);
                         context.setResult("AdminCommands: createUnbanTimer command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/getlogs":
+                        getLogs(update, bot);
+                        context.setResult("AdminCommands: getLogs command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/warn":
+                        warn(update, bot, args);
+                        context.setResult("AdminCommands: warn command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/ban":
+                        ban(update, bot, args);
+                        context.setResult("AdminCommands: ban command");
                         context.setBlockingResult(true);
                         break;
                     default:
@@ -178,6 +200,8 @@ public class AdminCommands {
                 if(DBLoader.addAdmin(Long.parseLong(args[1]))){
                     bot.reloadConfig();
                     message.setText(args[1] + " added to admin list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("ADD_ADMIN", update.getMessage().getFrom().getId().toString(), args[1], "");
                 } else {
                     message.setText(args[1] + " is already in the admin list");
                 }
@@ -221,6 +245,8 @@ public class AdminCommands {
                 if (DBLoader.removeAdmin(Long.parseLong(args[1]))){
                     bot.reloadConfig();
                     message.setText(args[1] + " removed from admin list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("REMOVE_ADMIN", update.getMessage().getFrom().getId().toString(), args[1], "");
                 } else {
                     message.setText(args[1] + " is not in the admin list");
                 }
@@ -279,6 +305,8 @@ public class AdminCommands {
                 String result = DBLoader.enableModule(args[1]);
                 if(result.equals("success")){
                     message.setText(args[1] + " has been enabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("ENABLE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
                 } else {
                     message.setChatId(update.getMessage().getChatId());
                     message.setText(result);
@@ -314,6 +342,8 @@ public class AdminCommands {
                 String result = DBLoader.disableModule(args[1]);
                 if(result.equals("success")){
                     message.setText(args[1] + " has been disabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("DISABLE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
                 } else {
                     message.setChatId(update.getMessage().getChatId());
                     message.setText(result);
@@ -404,6 +434,8 @@ public class AdminCommands {
                 if (DBLoader.addModule(args[1])){
                     ModuleControl.reloadModules();
                     message.setText(args[1] + " added to the module list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("ADD_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
                 } else {
                     message.setText(args[1] + " already present in the modules list");
                 }
@@ -443,6 +475,8 @@ public class AdminCommands {
                 if (DBLoader.removeModule(args[1])){
                     ModuleControl.reloadModules();
                     message.setText(args[1] + " removed from the module list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("REMOVE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
                 } else {
                     message.setText(args[1] + " not present in the modules list");
                 }
@@ -478,6 +512,8 @@ public class AdminCommands {
                 if (DBLoader.banSticker(args[1])){
                     StickerPackBanner.reloadBannedPacks();
                     message.setText(args[1] + " added to the banned stickers list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("BAN_STICKERPACK", update.getMessage().getFrom().getId().toString(), "", args[1]);
                 } else {
                     message.setText(args[1] + " already present in the banned stickers list");
                 }
@@ -513,6 +549,8 @@ public class AdminCommands {
                 if (DBLoader.unbanSticker(args[1])){
                     StickerPackBanner.reloadBannedPacks();
                     message.setText(args[1] + " removed from the banned stickers list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
+
+                    DBLoader.logEvent("UNBAN_STICKERPACK", update.getMessage().getFrom().getId().toString(), "", args[1]);
                 } else {
                     message.setText(args[1] + " not present in the banned stickers list");
                 }
@@ -587,6 +625,162 @@ public class AdminCommands {
 
         DBLoader.addTimer("UNBAN", args[1], expiryTime);
 
-        System.out.println("Created Unban Timer");
+        DBLoader.logEvent("CREATE_MANUAL_TIMER", update.getMessage().getFrom().getId().toString(), args[1], "UNBAN - " + expiryTime.toString());
+    }
+
+    ////////////////////////////////////////////////////////
+    // /getLogs //
+    ////////////////////////////////////////////////////////
+    public static void getLogs(Update update, ObibitalWeaponsPlatform bot){
+        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        List<StatisticBean> logs = DBLoader.getLogs();
+        String text = "Last " + logs.size() + " log entries: \n";
+
+        for(StatisticBean log : logs){
+            text = text + log + "\n";
+        }
+        message.setText(text);
+
+        bot.send(message);
+    }
+
+    ////////////////////////////////////////////////////////
+    // /ban [user] [durationVal] [durationField] [reason] //
+    ////////////////////////////////////////////////////////
+    public static void ban(Update update, ObibitalWeaponsPlatform bot, String[] args){
+        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+
+        if(args.length > 3){
+            // args supplied, check if valid
+            m_userId = p_userId.matcher(args[1]);
+            m_userName = p_userName.matcher(args[1]);
+            if (m_userId.find() ) {
+                //determine length
+                LocalDateTime expiryTime = LocalDateTime.now();
+                for(int i = 0; i < args.length; i++){
+                    System.out.println(args[i]);
+                }
+                switch(args[3].toLowerCase()){
+                    case "minutes":
+                        expiryTime = expiryTime.plusMinutes(Long.parseLong(args[2]));
+                        break;
+                    case "days": 
+                        expiryTime = expiryTime.plusDays(Long.parseLong(args[2]));
+                        break;
+                    case "weeks":
+                        expiryTime = expiryTime.plusWeeks(Long.parseLong(args[2]));
+                        break; 
+                    case "months":
+                        expiryTime = expiryTime.plusMonths(Long.parseLong(args[2]));
+                        break; 
+                    default:    
+                        message = new SendMessage().setChatId(update.getMessage().getChatId());
+                        message.setText("Incorrect Arguments Supplied. durationField should be minutes, days, weeks, or months");
+                        bot.send(message);
+                    return;
+                }
+
+                KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Integer.parseInt(args[1]));
+                kick.setUntilDate(expiryTime.toInstant(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())));
+                boolean success = true;
+                try{
+                    bot.execute(kick);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                    success = false;
+                }
+
+                //create reason
+                String reason = "";
+                for(int i = 3; i < args.length; i++){
+                    reason = reason + args[i] + " ";
+                }
+
+                if(success){
+                    // add a ban and perform the ban
+                    DBLoader.logEvent("BAN", update.getMessage().getFrom().getId().toString(), args[1], reason + "- " + "automatic unban on " + expiryTime);
+
+                    List<StatisticBean> warnLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"WARN"});
+                    List<StatisticBean> banLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"BAN"});
+                    
+                    message.setText("Banned succesfully for " + reason + " until " + expiryTime.toString() + ". User " + args[1] + " has " + warnLogs.size() + " warnings and " + banLogs.size() + " manual bans on record.");
+                    bot.send(message);
+
+                    DBLoader.addTimer("NOTIFY", bot.getModChatId() + args[1] + " has been unbanned from " + DBLoader.configValue("networkName") + " and may now rejoin: " + DBLoader.configValue("groupLink"), expiryTime);
+                } else {
+                    message.setText("Ban failure - please consult an administrator");
+                    bot.send(message);
+                }
+
+            } else if ( m_userName.find() ) {
+                //find the userid and add the admin
+                //TODO: add @username functionality
+                message.setChatId(update.getMessage().getChatId())
+                .setText("@usernames are not supported at this time, please use userId");
+
+                bot.send(message);
+            } else {
+                //field doesn't match, prompt user for better one
+                message.setChatId(update.getMessage().getChatId())
+                .setText("incorrect format. please use the userid as input");
+
+                bot.send(message);
+            }
+        } else {
+            // please supply a valid username or userid
+            message.setChatId(update.getMessage().getChatId())
+            .setText("Please provide the correct input `/ban userid durationVal durationField reason`. To permaban use /permaban user reason");
+
+            bot.send(message);
+        }
+    }
+
+    ////////////////////////////////////////////////////////
+    // /warn [user] [reason] //
+    ////////////////////////////////////////////////////////
+    public static void warn(Update update, ObibitalWeaponsPlatform bot, String[] args){
+        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+
+        if(args.length > 1){
+            // args supplied, check if valid
+            m_userId = p_userId.matcher(args[1]);
+            m_userName = p_userName.matcher(args[1]);
+            if (m_userId.find() ) {
+                //create reason
+                String reason = "";
+                for(int i = 2; i < args.length; i++){
+                    reason = reason + args[i] + " ";
+                }
+
+                // add a warning 
+                DBLoader.logEvent("WARN", update.getMessage().getFrom().getId().toString(), args[1], reason);
+
+                List<StatisticBean> warnLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"WARN"});
+                List<StatisticBean> banLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"BAN"});
+                
+                message.setText("Warning succesfully added for " + reason + ". User " + args[1] + " has " + warnLogs.size() + " warnings and " + banLogs.size() + " manual bans on record.");
+                bot.send(message);
+
+            } else if ( m_userName.find() ) {
+                //find the userid and add the admin
+                //TODO: add @username functionality
+                message.setChatId(update.getMessage().getChatId())
+                .setText("@usernames are not supported at this time, please use userId");
+
+                bot.send(message);
+            } else {
+                //field doesn't match, prompt user for better one
+                message.setChatId(update.getMessage().getChatId())
+                .setText("incorrect format. please use the userid as input");
+
+                bot.send(message);
+            }
+        } else {
+            // please supply a valid username or userid
+            message.setChatId(update.getMessage().getChatId())
+            .setText("Please provide the correct input `/warn userid reason`");
+
+            bot.send(message);
+        }
     }
 }
