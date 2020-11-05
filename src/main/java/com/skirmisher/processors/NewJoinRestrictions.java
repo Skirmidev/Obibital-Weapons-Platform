@@ -14,7 +14,7 @@ public class NewJoinRestrictions {
 
     public static Context manageNewJoin(Context context, Update update, ObibitalWeaponsPlatform bot){
         System.out.println("NewJoinRestrictions:: newJoinRestrictions");
-        if((update.getMessage().getNewChatMembers() != null) && !context.isBlockingResult()){
+        if((!update.getMessage().getNewChatMembers().isEmpty()) && !context.isBlockingResult()){
             RestrictChatMember managePerms = new RestrictChatMember();
 
             ChatPermissions perms = new ChatPermissions();

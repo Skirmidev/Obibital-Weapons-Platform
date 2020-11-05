@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 
 import com.skirmisher.data.DBLoader;
 import com.skirmisher.processors.StickerPackBanner;
+import com.skirmisher.obibital.ModuleControl;
 
 import java.util.concurrent.*;
 import static java.util.concurrent.TimeUnit.*;
@@ -20,6 +21,8 @@ public class BotLauncher {
         ObibitalWeaponsPlatform bot = new ObibitalWeaponsPlatform();
 
         StickerPackBanner.reloadBannedPacks();
+
+        ModuleControl.reloadModules();
 
         bot.reloadConfig();
 

@@ -18,8 +18,11 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.List;
 import java.time.*;
+
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.objects.Chat;
 
 public class AdminCommands {
     static char prefix = '/';
@@ -158,6 +161,11 @@ public class AdminCommands {
                         context.setResult("AdminCommands: ban command");
                         context.setBlockingResult(true);
                         break;
+                    case "/usernamefromid":
+                        usernameFromId(update, bot, args);
+                        context.setResult("AdminCommands: usernameFromId command");
+                        context.setBlockingResult(true);
+                        break;
                     default:
                         unrecognisedCommand(update, bot);
                         break;
@@ -198,6 +206,7 @@ public class AdminCommands {
                             "/addModule [moduleName]"  + "\n" +
                             "/removeModule [moduleName]"  + "\n" +
                             "/createUnbanTimer [userId] [durationVal] [durationField]"  + "\n" +
+                            "/usernamefromid [userId]"  + "\n" +
                             "");
 
         bot.send(message);
@@ -853,7 +862,8 @@ public class AdminCommands {
         int warn = 0;
         int ban = 0;
         int ban_stickerpack = 0;
-
+        int night_join = 0;
+        int stickerspam = 0;
 
         for(StatisticBean bean : logs){
             switch(bean.getEvent()){
@@ -866,6 +876,12 @@ public class AdminCommands {
                 case "BAN_STICKERPACK":
                     ban_stickerpack++;
                     break;
+                case "NIGHT_JOIN":
+                    night_join++;
+                    break;
+                case "STICKERSPAM":
+                    stickerspam++;
+                    break;
                 default:
                     break;
             }
@@ -875,15 +891,17 @@ public class AdminCommands {
         message.setText("Events in the last week:\n" + 
             "Warnings: " + warn + "\n" +
             "Bans: " + ban + "\n" +
-            "Stickerpack Bans: " + ban_stickerpack + "\n" 
+            "Stickerpack Bans: " + ban_stickerpack + "\n" +
+            "Nighttime Joiners: " + night_join + "\n" +
+            "Sticker Spam Attempts: " + stickerspam + "\n" 
         );
 
         bot.send(message);
     }
 
-    //////////////////////
+    /////////////////////////////
     // /getLogsByUser [userId] //
-    //////////////////////
+    /////////////////////////////
     public static void getLogsByUser(Update update, ObibitalWeaponsPlatform bot, String[] args){
         if(args.length > 1){
             SendDocument doc = DBLoader.getLogsFileBySourceUser(args[1]);
@@ -900,6 +918,53 @@ public class AdminCommands {
             SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
             message.setChatId(update.getMessage().getChatId())
             .setText("Please provide the correct input `/getLogsByUser [userId]`");
+
+            bot.send(message);
+        }
+    }
+
+    /////////////////////////////
+    // /usernameFromId [userId] //
+    /////////////////////////////
+    public static void usernameFromId(Update update, ObibitalWeaponsPlatform bot, String[] args){
+        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        if(args.length > 1){
+            // args supplied, check if valid
+            m_userId = p_userId.matcher(args[1]);
+            if (m_userId.find() ) {
+
+                GetChat chat = new GetChat();
+                chat.setChatId(Long.parseLong(args[1]));
+
+                Chat result = null;
+
+                try{
+                    result = bot.execute(chat);
+                } catch (TelegramApiException e){
+                    e.printStackTrace();
+                    System.out.println("Failed to get chat :(");
+                }
+
+                if(result != null){
+                    message.setText(result.getUserName());
+                    bot.send(message);
+                } else {
+                    message.setText("Couldn't Find User");
+                    bot.send(message);
+                }
+                
+
+            } else {
+                //field doesn't match, prompt user for better one
+                message.setChatId(update.getMessage().getChatId())
+                .setText("incorrect format. please use the userid as input");
+
+                bot.send(message);
+            }
+        } else {
+            // please supply a valid username or userid
+            message.setChatId(update.getMessage().getChatId())
+            .setText("Please provide the correct input `/usernameFromId userid`");
 
             bot.send(message);
         }

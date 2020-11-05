@@ -46,6 +46,8 @@ public class StickerPackBanner {
             System.out.println("StickerPackBanner:: Pack" + packId + "is already banned - how did this get through?");
         } else {
             DBLoader.banSticker(packId);
+            
+            DBLoader.logEvent("BAN_STICKERPACK", "", "", packId);
 
             System.out.println("StickerPackBanner:: Pack" + packId + " has been banned");
             reloadBannedPacks();

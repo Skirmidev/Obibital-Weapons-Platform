@@ -16,9 +16,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 public class NightTimeRestrictor {
     public static Context manageNewJoin(Context context, Update update, ObibitalWeaponsPlatform bot){
         System.out.println("NightTimeRestrictor:: manageNewJoin");
-        if((update.getMessage().getNewChatMembers() != null) && !context.isBlockingResult()){
+        if((!update.getMessage().getNewChatMembers().isEmpty()) && !context.isBlockingResult()){
+            System.out.println(update.getMessage().getNewChatMembers());
 
             LocalDateTime currentTime = LocalDateTime.now();
+            System.out.println("current hour: " + currentTime.getHour());
 
             if(currentTime.getHour() < 9){
 
@@ -40,30 +42,38 @@ public class NightTimeRestrictor {
 
                 LocalDateTime nextMorning = currentTime.toLocalDate().atTime(9, 0);
 
-                managePerms.setUntilDate(Math.toIntExact(nextMorning.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())))); //unix time, 1 day restriction
-                managePerms.setChatId(update.getMessage().getChatId());
+                if((nextMorning.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())) - 60l) < ( LocalDateTime.now().toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())))){
+                    //1 minute til 9 am, leave them be sure
+                    //this ensures they are never infinitely restricte
+                } else {
+                    managePerms.setUntilDate(Math.toIntExact(nextMorning.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now()))));
+                    managePerms.setChatId(update.getMessage().getChatId());
 
-                for(User user : update.getMessage().getNewChatMembers()){
-                    managePerms.setUserId(user.getId());
-                    System.out.println("NewJoinRestrictions:: Restricted new user: " + user.getUserName() + " - " + user.getId());
-                    context.setResult("NewJoinRestrictions:: A new member has joined and been restricted");
-                    context.setBlockingResult(true);
-                    users = users + "@" + user.getUserName() + " ";
+                    for(User user : update.getMessage().getNewChatMembers()){
+                        managePerms.setUserId(user.getId());
+                        System.out.println("NewJoinRestrictions:: Restricted new user: " + user.getUserName() + " - " + user.getId());
+                        context.setResult("NewJoinRestrictions:: A new member has joined and been restricted");
+                        context.setBlockingResult(true);
+                        users = users + "@" + user.getUserName() + " ";
 
-                    try{        
-                        bot.execute(managePerms);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                        DBLoader.logEvent("NIGHT_JOIN", "", user.getUserName(), "");
+
+                        try{        
+                            bot.execute(managePerms);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
                     }
+
+                    
+                    SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+                    message.setText("Welcome to the chat! Due to security concerns, you are unable to send messages until 9am. We apologise for the inconvenience.");
+                    message.setReplyToMessageId(update.getMessage().getMessageId());
+                    bot.send(message);
+
+                    //DBLoader.addTimer(action, args, time);
+                    DBLoader.addTimer("NOTIFY", bot.getGroupChatId() + " " + users + "- daytime is here, you are no longer muted. ", nextMorning);
                 }
-
-                
-                SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
-                message.setText("Welcome to the chat! Due to security concerns, you are unable to send messages until 9am. We apologise for the inconvenience.");
-                message.setReplyToMessageId(update.getMessage().getMessageId());
-
-                //DBLoader.addTimer(action, args, time);
-                DBLoader.addTimer("NOTIFY", bot.getGroupChatId() + users + "- daytime is here, you are no longer muted. ", nextMorning);
             }
 
         }

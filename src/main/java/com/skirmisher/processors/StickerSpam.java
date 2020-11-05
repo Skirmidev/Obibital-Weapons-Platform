@@ -6,6 +6,7 @@ import com.skirmisher.obibital.ObibitalWeaponsPlatform;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import java.util.ArrayList;
 import com.skirmisher.obibital.Context;
+import com.skirmisher.data.DBLoader;
 
 public class StickerSpam {
     static int stickerCount = 0;
@@ -74,6 +75,7 @@ public class StickerSpam {
             bot.execute(delete);
             context.setResult("StickerSpam:: Sticker Spam - Deleted");
             context.setBlockingResult(true);
+            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId().toString(), "", "");
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

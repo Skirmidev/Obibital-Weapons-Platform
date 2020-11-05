@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.ChatPermissions;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.RestrictChatMember;
 import java.time.LocalDateTime;
+import com.skirmisher.data.beans.StatisticBean;
 
 public class TimerPoller implements Runnable{
     ObibitalWeaponsPlatform bot;    
@@ -39,6 +40,7 @@ public class TimerPoller implements Runnable{
                     case "NOTIFY":
                         //args - userid - message  
                         sendNotif(splitArgs);
+                        break;
                     case "WEEKLYREPORT":
                         //args - 
                         weeklyReport();
@@ -123,13 +125,49 @@ public class TimerPoller implements Runnable{
     // WEEKLYREPORT //
     //////////////////
     public void weeklyReport(){
-        //TODO: get details from a logging/statistics system
+        List<StatisticBean> logs = DBLoader.getLogsInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
 
-        //create a new timer set for a week from now
-        
-        SendMessage modMessage = new SendMessage().setChatId(bot.getModChatId());
-        modMessage.setText("THIS IS THE WEEKLY REPORT");
-        bot.send(modMessage);
+        int warn = 0;
+        int ban = 0;
+        int ban_stickerpack = 0;
+        int night_join = 0;
+        int stickerspam = 0;
+
+        for(StatisticBean bean : logs){
+            switch(bean.getEvent()){
+                case "WARN":
+                    warn++;
+                    break;
+                case "BAN":
+                    ban++;
+                    break;
+                case "BAN_STICKERPACK":
+                    ban_stickerpack++;
+                    break;
+                case "NIGHT_JOIN":
+                    night_join++;
+                    break;
+                case "STICKERSPAM":
+                    stickerspam++;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        message.setText("Events in the last week:\n" + 
+            "Warnings: " + warn + "\n" +
+            "Bans: " + ban + "\n" +
+            "Stickerpack Bans: " + ban_stickerpack + "\n" +
+            "Nighttime Joiners: " + night_join + "\n" +
+            "Sticker Spam Attempts: " + stickerspam + "\n" 
+        );
+
+        bot.send(message);
+
+        //create a new timer for a week from now
+        DBLoader.addTimer("WEEKLYREPORT", "", LocalDateTime.now().plusWeeks(1));
     }
 
     //////////////////////////////////
@@ -139,7 +177,7 @@ public class TimerPoller implements Runnable{
         SendMessage message = new SendMessage().setChatId(args[0]);
         String info = "";
         for(int i = 1; i < args.length; i++){
-            info = info + args[i];
+            info = info + args[i] + " ";
         }
         message.setText(info);
         bot.send(message);
