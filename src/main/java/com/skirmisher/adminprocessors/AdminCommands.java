@@ -26,6 +26,7 @@ import org.telegram.telegrambots.meta.api.objects.Chat;
 
 public class AdminCommands {
     static char prefix = '/';
+    static String activeCommands = "";
 
     ////////////////////
     // Regex Patterns //
@@ -47,6 +48,8 @@ public class AdminCommands {
         System.out.println("AdminCommands:: command");
         if(update.getMessage().hasText() && !context.isBlockingResult()){
             if(update.getMessage().getText().charAt(0) == prefix){
+
+                activeCommands = DBLoader.configValue("activeAdminCommands");
                 
 
                 //split the inputs
@@ -57,124 +60,220 @@ public class AdminCommands {
                 //this is a command. Switch to find out what it does.
                 switch(args[0]){ //add something here to split the string apart based on gaps
                     case "/help":
-                        help(update, bot);
-                        context.setResult("AdminCommands: Help command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("help")){
+                            help(update, bot);
+                            context.setResult("AdminCommands: Help command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/addadmin":
-                        addAdmin(update, bot, args);
-                        context.setResult("AdminCommands: addAdmin command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("addadmin")){
+                            addAdmin(update, bot, args);
+                            context.setResult("AdminCommands: addAdmin command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/removeadmin":
-                        removeAdmin(update, bot, args);
-                        context.setResult("AdminCommands: removeAdmin command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("removeadmin")){
+                            removeAdmin(update, bot, args);
+                            context.setResult("AdminCommands: removeAdmin command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/listadmins":
-                        listAdmins(update, bot);
-                        context.setResult("AdminCommands: listAdmins command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("listadmins")){
+                            listAdmins(update, bot);
+                            context.setResult("AdminCommands: listAdmins command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/disablemodule":
-                        disableModule(update, bot, args);
-                        context.setResult("AdminCommands: disableModule command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("disablemodule")){
+                            disableModule(update, bot, args);
+                            context.setResult("AdminCommands: disableModule command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/enablemodule":
-                        enableModule(update, bot, args);
-                        context.setResult("AdminCommands: enableModule command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("enablemodule")){
+                            enableModule(update, bot, args);
+                            context.setResult("AdminCommands: enableModule command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/getmodules":
-                        getModules(update, bot);
-                        context.setResult("AdminCommands: getModules command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("getmodules")){
+                            getModules(update, bot);
+                            context.setResult("AdminCommands: getModules command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                             break;
                     case "/modulestatus":
-                        moduleStatus(update, bot, args);
-                        context.setResult("AdminCommands: getModules command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("modulestatus")){
+                            moduleStatus(update, bot, args);
+                            context.setResult("AdminCommands: getModules command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/addmodule":
-                        addModule(update, bot, args);
-                        context.setResult("AdminCommands: addModule command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("addmodule")){
+                            addModule(update, bot, args);
+                            context.setResult("AdminCommands: addModule command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/removemodule":
-                        removeModule(update, bot, args);
-                        context.setResult("AdminCommands: removeModule command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("removemodule")){
+                            removeModule(update, bot, args);
+                            context.setResult("AdminCommands: removeModule command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/banpack":
-                        banPack(update, bot, args);
-                        context.setResult("AdminCommands: banPack command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("banpack")){
+                            banPack(update, bot, args);
+                            context.setResult("AdminCommands: banPack command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/unbanpack":
-                        unbanPack(update, bot, args);
-                        context.setResult("AdminCommands: unbanPack command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("unbanpack")){
+                            unbanPack(update, bot, args);
+                            context.setResult("AdminCommands: unbanPack command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/getbannedpacks":
-                        getBannedPacks(update, bot);
-                        context.setResult("AdminCommands: getBnnnedPacks command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("getbannedpacks")){
+                            getBannedPacks(update, bot);
+                            context.setResult("AdminCommands: getBnnnedPacks command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/createunbantimer":
-                        createUnbanTimer(update, bot, args);
-                        context.setResult("AdminCommands: createUnbanTimer command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("createunbantimer")){
+                            createUnbanTimer(update, bot, args);
+                            context.setResult("AdminCommands: createUnbanTimer command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/getlogs":
-                        getLogs(update, bot);
-                        context.setResult("AdminCommands: getLogs command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("getlogs")){
+                            getLogs(update, bot);
+                            context.setResult("AdminCommands: getLogs command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/getalllogs":
-                        getAllLogs(update, bot);
-                        context.setResult("AdminCommands: getAllLogs command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("getalllogs")){
+                            getAllLogs(update, bot);
+                            context.setResult("AdminCommands: getAllLogs command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/getlastweeklogs":
-                        getAllLogs(update, bot);
-                        context.setResult("AdminCommands: getLastWeekLogs command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("getlastweeklogs")){
+                            getAllLogs(update, bot);
+                            context.setResult("AdminCommands: getLastWeekLogs command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/weekreport":
-                        getAllLogs(update, bot);
-                        context.setResult("AdminCommands: weekReport command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("weekreport")){
+                            getAllLogs(update, bot);
+                            context.setResult("AdminCommands: weekReport command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/getlogsbyuser":
-                        getLogsByUser(update, bot, args);
-                        context.setResult("AdminCommands: weekReport command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("getlogsbyuser")){
+                            getLogsByUser(update, bot, args);
+                            context.setResult("AdminCommands: weekReport command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/warn":
-                        warn(update, bot, args);
-                        context.setResult("AdminCommands: warn command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("warn")){
+                            warn(update, bot, args);
+                            context.setResult("AdminCommands: warn command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/ban":
-                        ban(update, bot, args);
-                        context.setResult("AdminCommands: ban command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("ban")){
+                            ban(update, bot, args);
+                            context.setResult("AdminCommands: ban command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/usernamefromid":
-                        usernameFromId(update, bot, args);
-                        context.setResult("AdminCommands: usernameFromId command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("usernamefromid")){
+                            usernameFromId(update, bot, args);
+                            context.setResult("AdminCommands: usernameFromId command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/idfromusername":
-                        idFromUsername(update, bot, args);
-                        context.setResult("AdminCommands: idFromUsername command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("idfromusername")){
+                            idFromUsername(update, bot, args);
+                            context.setResult("AdminCommands: idFromUsername command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     case "/getid":
-                        getId(update, bot);
-                        context.setResult("AdminCommands: getid command");
-                        context.setBlockingResult(true);
+                        if(activeCommands.contains("getid")){
+                            getId(update, bot);
+                            context.setResult("AdminCommands: getid command");
+                            context.setBlockingResult(true);
+                        } else {
+                            commandNotEnabled(update, bot);
+                        }
                         break;
                     default:
                         unrecognisedCommand(update, bot);
@@ -218,6 +317,17 @@ public class AdminCommands {
                             "/createUnbanTimer [userId] [durationVal] [durationField]"  + "\n" +
                             "/usernamefromid [userId]"  + "\n" +
                             "");
+
+        bot.send(message);
+    }
+
+    /////////////////////////
+    // command Not Enabled //
+    /////////////////////////
+    public static void commandNotEnabled(Update update, ObibitalWeaponsPlatform bot){
+        SendMessage message = new SendMessage()
+                .setChatId(update.getMessage().getChatId())
+                .setText(   "This command is not currently enabled. Please consult an admin and the config file");
 
         bot.send(message);
     }
@@ -355,6 +465,8 @@ public class AdminCommands {
                     message.setText(args[1] + " has been enabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
 
                     DBLoader.logEvent("ENABLE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
+
+                    ModuleControl.reloadModules();
                 } else {
                     message.setChatId(update.getMessage().getChatId());
                     message.setText(result);
@@ -392,6 +504,8 @@ public class AdminCommands {
                     message.setText(args[1] + " has been disabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
 
                     DBLoader.logEvent("DISABLE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
+
+                    ModuleControl.reloadModules();
                 } else {
                     message.setChatId(update.getMessage().getChatId());
                     message.setText(result);
