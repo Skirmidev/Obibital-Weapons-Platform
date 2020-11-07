@@ -166,6 +166,16 @@ public class AdminCommands {
                         context.setResult("AdminCommands: usernameFromId command");
                         context.setBlockingResult(true);
                         break;
+                    case "/idfromusername":
+                        idFromUsername(update, bot, args);
+                        context.setResult("AdminCommands: idFromUsername command");
+                        context.setBlockingResult(true);
+                        break;
+                    case "/getid":
+                        getId(update, bot);
+                        context.setResult("AdminCommands: getid command");
+                        context.setBlockingResult(true);
+                        break;
                     default:
                         unrecognisedCommand(update, bot);
                         break;
@@ -966,6 +976,74 @@ public class AdminCommands {
             message.setChatId(update.getMessage().getChatId())
             .setText("Please provide the correct input `/usernameFromId userid`");
 
+            bot.send(message);
+        }
+    }
+
+    /////////////////////////////
+    // /idFromUsername [username] //
+    /////////////////////////////
+    public static void idFromUsername(Update update, ObibitalWeaponsPlatform bot, String[] args){
+        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        message.setChatId(update.getMessage().getChatId())
+            .setText("This method does not work, please find a solution for the problem");
+
+            bot.send(message);
+        if(args.length > 1){
+            // args supplied, check if valid
+            //m_userName = p_userName.matcher(args[1]);
+            //if (m_userName.find() ) {
+
+                GetChat chat = new GetChat();
+                chat.setChatId(args[1]);
+
+                Chat result = null;
+
+                try{
+                    result = bot.execute(chat);
+                } catch (TelegramApiException e){
+                    e.printStackTrace();
+                    System.out.println("Failed to get chat :(");
+                }
+
+                if(result != null){
+                    message.setText(result.getId().toString());
+                    bot.send(message);
+                } else {
+                    message.setText("Couldn't Find User");
+                    bot.send(message);
+                }
+                
+
+            //} else {
+            //    //field doesn't match, prompt user for better one
+            //    message.setChatId(update.getMessage().getChatId())
+            //    .setText("incorrect format. please use the username as input");
+            //
+            //    bot.send(message);
+            //}
+        } else {
+            // please supply a valid username or userid
+            message.setChatId(update.getMessage().getChatId())
+            .setText("Please provide the correct input `/idFromUsername username`");
+
+            bot.send(message);
+        }
+    }
+
+    ////////////////////////////////////////////////
+    // /getId // must be in response to a message //
+    ////////////////////////////////////////////////
+    public static void getId(Update update, ObibitalWeaponsPlatform bot){
+        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        
+        if(update.getMessage().getReplyToMessage() != null){
+            //replied to a message, lets get the userid of it
+            message.setText("userid: " + update.getMessage().getReplyToMessage().getFrom().getId());
+            bot.send(message);
+        } else {
+            //they didn't reply to a message. silly.
+            message.setText("please use this command in response to a message");
             bot.send(message);
         }
     }

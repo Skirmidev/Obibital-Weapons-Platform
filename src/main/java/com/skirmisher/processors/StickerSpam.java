@@ -75,7 +75,6 @@ public class StickerSpam {
             bot.execute(delete);
             context.setResult("StickerSpam:: Sticker Spam - Deleted");
             context.setBlockingResult(true);
-            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId().toString(), "", "");
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -85,6 +84,8 @@ public class StickerSpam {
             .setChatId(update.getMessage().getChatId())
             .setText("Please be considerate of other users and avoid spamming the chat with images or stickers");
             bot.send(message);
+            
+            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName() + " ID: " + update.getMessage().getFrom().getUserName();
         }
     }
 }
