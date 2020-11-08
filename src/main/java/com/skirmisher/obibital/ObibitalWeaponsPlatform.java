@@ -19,9 +19,6 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Context context = new Context();
 
-        System.out.println("ObibitalWeaponsPlatform:: New Update Received");
-        System.out.println(update);
-
         //switch on chat ID
         if(update.getMessage().getChatId().equals(groupId)) {
             ModuleControl.runChatModules(context, update, this);
@@ -32,6 +29,9 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
         } else if (update.getMessage().getChatId().equals(modChatId)) {
             //message in the mod chat, permit command interface
             AdminInterface.run(context, update, this);
+        } else {
+            System.out.println("ObibitalWeaponsPlatform:: New Update Received - unidentified source");
+            System.out.println(update);
         }
     }
 

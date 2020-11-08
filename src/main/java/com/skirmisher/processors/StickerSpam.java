@@ -38,7 +38,9 @@ public class StickerSpam {
     private static void checkIfPackSpam(Context context, Update update, ObibitalWeaponsPlatform bot){
         //check to see if the exact same sticker has been sent 3 times. If so, ban the pack.
         if( lastStickers.get(stickerCount-1).getMessage().getSticker().getFileUniqueId().equals(    lastStickers.get(stickerCount-2).getMessage().getSticker().getFileUniqueId()    ) &&
-        lastStickers.get(stickerCount-2).getMessage().getSticker().getFileUniqueId().equals(    lastStickers.get(stickerCount-3).getMessage().getSticker().getFileUniqueId()    )
+        lastStickers.get(stickerCount-2).getMessage().getSticker().getFileUniqueId().equals(        lastStickers.get(stickerCount-3).getMessage().getSticker().getFileUniqueId()    ) &&
+        lastStickers.get(stickerCount-1).getMessage().getFrom().getId().equals(                     lastStickers.get(stickerCount-2).getMessage().getFrom().getId()                 ) &&
+        lastStickers.get(stickerCount-2).getMessage().getFrom().getId().equals(                     lastStickers.get(stickerCount-3).getMessage().getFrom().getId()                 )
         ) {
         context.setResult("StickerSpam:: Duplicate Sticker Spam - Banning Pack");
         context.setBlockingResult(true);
