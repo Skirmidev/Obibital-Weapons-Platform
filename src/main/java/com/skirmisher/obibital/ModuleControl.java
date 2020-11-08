@@ -7,11 +7,11 @@ import com.skirmisher.data.beans.ModuleBean;
 import java.util.List;
 
 public class ModuleControl {
-    static boolean stickerSpam = true;
-    static boolean commands = true;
-    static boolean stickerPackBanner = true;
-    static boolean newJoinRestrictions = true;
-    static boolean nightTimeRestrictor = true;
+    static boolean stickerSpam = false;
+    static boolean commands = false;
+    static boolean stickerPackBanner = false;
+    static boolean newJoinRestrictions = false;
+    static boolean nightTimeRestrictor = false;
 
     public static void runChatModules(Context context, Update update, ObibitalWeaponsPlatform bot){
         
