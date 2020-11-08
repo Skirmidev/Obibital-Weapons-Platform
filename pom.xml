@@ -209,6 +209,8 @@
                                 <argument>--mount</argument>
                                 <argument>type=bind,source=${project.basedir}${file.separator}dockerdata,target=/src/main/data</argument>
                                 <argument>--detach</argument>
+                                <argument>--restart</argument>
+                                <argument>unless-stopped</argument>
                                 <argument>telegram-modbot</argument>
                             </arguments>
                         </configuration>
