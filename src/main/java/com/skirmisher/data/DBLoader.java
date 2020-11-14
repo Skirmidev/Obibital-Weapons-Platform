@@ -448,14 +448,14 @@ public class DBLoader {
         List<String> modules = new ArrayList<>();
         boolean success = false;
 
-        try (BufferedReader br = Files.newBufferedReader(adminsPath, StandardCharsets.UTF_8)) {
+        try (BufferedReader br = Files.newBufferedReader(modulesPath, StandardCharsets.UTF_8)) {
 
             HeaderColumnNameMappingStrategy<ModuleBean> strategy
                     = new HeaderColumnNameMappingStrategy<>();
             strategy.setType(ModuleBean.class);
 
             CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(AdminBean.class)
+                    .withType(ModuleBean.class)
                     .withMappingStrategy(strategy)
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
@@ -497,7 +497,7 @@ public class DBLoader {
             strategy.setType(ModuleBean.class);
 
             CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(AdminBean.class)
+                    .withType(ModuleBean.class)
                     .withMappingStrategy(strategy)
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
@@ -511,7 +511,7 @@ public class DBLoader {
                 }
             }
 
-            Writer writer = new FileWriter(dataPath + adminsFile);
+            Writer writer = new FileWriter(dataPath + modulesFile);
             StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
             
             beanToCsv.write(newModules);
