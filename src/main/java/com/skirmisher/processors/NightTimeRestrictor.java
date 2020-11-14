@@ -67,9 +67,12 @@ public class NightTimeRestrictor {
 
                     
                     SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
-                    message.setText("Welcome to the chat! Due to security concerns, you are unable to send messages until 9am. We apologise for the inconvenience.");
+                    message.setText("Welcome to the chat " + users + "! Due to security concerns, you are unable to send messages until 9am. We apologise for the inconvenience.");
                     message.setReplyToMessageId(update.getMessage().getMessageId());
                     bot.send(message);
+
+                    SendMessage modChatMessage = new SendMessage().setChatId(bot.getModChatId());
+                    modChatMessage.setText(users + "has been muted after joining the chat for the next " + Math.floorDiv(nextMorning.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())),60l) + " minutes");
 
                     //DBLoader.addTimer(action, args, time);
                     DBLoader.addTimer("NOTIFY", bot.getGroupChatId() + " " + users + "- daytime is here, you are no longer muted. ", nextMorning);

@@ -84,10 +84,10 @@ public class StickerSpam {
         if(stickerCount == 4){
             SendMessage message = new SendMessage()
             .setChatId(update.getMessage().getChatId())
-            .setText("Please be considerate of other users and avoid spamming the chat with images or stickers");
+            .setText("Please be considerate of other users and avoid spamming the chat with stickers");
             bot.send(message);
             
-            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName() + " ID: " + update.getMessage().getFrom().getUserName());
+            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());
         }
     }
 }

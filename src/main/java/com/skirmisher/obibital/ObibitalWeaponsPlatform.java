@@ -10,6 +10,7 @@ import java.util.List;
 import com.skirmisher.data.*;
 
 public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
+    boolean debug = true;
 
     Long groupId = 0l;
     Long modChatId = 0l;
@@ -32,6 +33,15 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
         } else {
             System.out.println("ObibitalWeaponsPlatform:: New Update Received - unidentified source");
             System.out.println(update);
+        }
+        
+        if (update.hasCallbackQuery()){
+            System.out.println("CALLBACK CONTENTS: " + update.getCallbackQuery().getData());
+        }
+
+        if(debug){
+            System.out.println("Update: " + update);
+            System.out.println("Context Result: " + context.getResult());
         }
     }
 

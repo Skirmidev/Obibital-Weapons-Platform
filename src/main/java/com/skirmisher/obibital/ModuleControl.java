@@ -12,6 +12,7 @@ public class ModuleControl {
     static boolean stickerPackBanner = false;
     static boolean newJoinRestrictions = false;
     static boolean nightTimeRestrictor = false;
+    static boolean imageSpam = false;
 
     public static void runChatModules(Context context, Update update, ObibitalWeaponsPlatform bot){
         
@@ -22,6 +23,10 @@ public class ModuleControl {
 
         if(stickerSpam) {
             StickerSpam.spamCheck(context, update, bot);
+        }
+
+        if(imageSpam) {
+            ImageSpam.spamCheck(context, update, bot);
         }
 
         if(commands) {
@@ -56,6 +61,9 @@ public class ModuleControl {
                     break;
                 case "nightTimeRestrictor":
                     nightTimeRestrictor = mod.getEnabled();
+                    break;
+                case "imageSpam":
+                    imageSpam = mod.getEnabled();
                     break;
             }
         }
