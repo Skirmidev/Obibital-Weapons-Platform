@@ -3,6 +3,7 @@ package com.skirmisher.data;
 import com.opencsv.bean.*;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 import com.skirmisher.data.beans.*;
+import java.time.*;
 
 public class DBLoader {
     static String dataPath = "src/main/data/";
@@ -519,4 +521,363 @@ public class DBLoader {
         }
         return success;
     }
+
+    ///////////////////////////////////////////
+    // Timers                                //
+    ///////////////////////////////////////////
+    static int timerId = 0;
+
+    public static List<TimerBean> getAllTimers() {
+        List<TimerBean> timerBeans = new ArrayList<>();
+        Path myPath = Paths.get(dataPath + "timers.csv");
+
+        // try {
+        //     CsvToBeanBuilder<TimerBean> beanBuilder = new CsvToBeanBuilder<>(new InputStreamReader(new FileInputStream(dataPath + "timers.csv")));
+        //     beanBuilder.withType(TimerBean.class);
+        //     timerBeans = beanBuilder.build().parse();
+        // } catch (FileNotFoundException e){
+        //     e.printStackTrace();
+        // }
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<TimerBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(TimerBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            timerBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return timerBeans;
+    }
+
+    public static List<TimerBean> getExpiredTimers() {
+        List<TimerBean> timerBeans = getAllTimers();
+        List<TimerBean> expiredBeans = new ArrayList<>();
+
+        for(TimerBean tim : timerBeans){
+            if(tim.getExpiry().isBefore(LocalDateTime.now())){
+                expiredBeans.add(tim);
+            }
+        }
+        return expiredBeans;
+    }
+
+    public static void addTimer(String action, String args, LocalDateTime time) {
+        List<TimerBean> timerBeans = getAllTimers();
+
+        timerBeans.add(new TimerBean(
+            timerId++,
+            action,
+            args,
+            time
+        ));
+
+        try{
+            Writer writer = new FileWriter(dataPath + "timers.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(timerBeans);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean removeTimer(int id) {
+        List<TimerBean> timerBeans = getAllTimers();
+        List<TimerBean> newBeans = new ArrayList<>();
+        Path myPath = Paths.get(dataPath + "timers.csv");
+        boolean success=false;
+
+        for(TimerBean tim : timerBeans){
+            if(tim.getTimerId() == id ){
+                success=true;
+            } else {
+                newBeans.add(tim);
+            }
+        }
+
+        if(success){
+            try{
+                Writer writer = new FileWriter(dataPath + "timers.csv");
+                StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+                
+                beanToCsv.write(newBeans);
+                writer.close();
+            } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return success;
+    }
+
+    public static void updateTimerId() {
+        //get timers
+        List<TimerBean> timerBeans = getAllTimers();
+        //find largest timer val
+        int largestVal = 0;
+        for(TimerBean tim : timerBeans){
+            if(tim.getTimerId() > largestVal){
+                largestVal = tim.getTimerId();
+            }
+        }
+        //add 1
+        largestVal++;
+        //timerId = above
+        timerId = largestVal;
+    }
+
+    
+    ///////////////////////////////////////////
+    // Statistics                            //
+    ///////////////////////////////////////////
+    public static void logEvent(String event, String sourceUser, String affectedUser, String notes) {
+        //Time, Event, SourceUser, AffectedUser, Notes
+        //TODO: refactor how we add new values to a file for optimisation
+        Path myPath = Paths.get(dataPath + "statistics.csv");
+        List<StatisticBean> statBeans = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<StatisticBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(StatisticBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            statBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        StatisticBean newStat = new StatisticBean();
+        newStat.setTime(LocalDateTime.now());
+        newStat.setEvent(event);
+        newStat.setSourceUser(sourceUser);
+        newStat.setAffectedUser(affectedUser);
+        newStat.setNotes(notes);
+
+        statBeans.add(newStat);
+
+        try{
+            Writer writer = new FileWriter(dataPath + "statistics.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(statBeans);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static List<StatisticBean> getAllLogs() {
+        //by default returns last 5 events. 
+        Path myPath = Paths.get(dataPath + "statistics.csv");
+        List<StatisticBean> statBeans = new ArrayList<>();
+
+        try (BufferedReader br = Files.newBufferedReader(myPath,
+                StandardCharsets.UTF_8)) {
+
+            HeaderColumnNameMappingStrategy<StatisticBean> strategy
+                    = new HeaderColumnNameMappingStrategy<>();
+            strategy.setType(StatisticBean.class);
+
+            CsvToBean csvToBean = new CsvToBeanBuilder(br)
+                    .withType(TimerBean.class)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            statBeans = csvToBean.parse();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return statBeans;
+    }
+
+    public static List<StatisticBean> getLogs() {
+        //by default returns last 5 events. 
+        List<StatisticBean> statBeans = getAllLogs();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        if(statBeans.size()-5 < 0){
+            returnBeans = statBeans.subList(0, statBeans.size());
+        } else {
+            returnBeans = statBeans.subList(statBeans.size()-5, statBeans.size());
+        }
+
+        return returnBeans;
+    }
+
+    public static SendDocument getLogsFile() {
+        SendDocument doc = new SendDocument();
+
+        File statsFile = new File(dataPath + "statistics.csv");
+
+        doc.setDocument(statsFile);
+        doc.setCaption(LocalDateTime.now().toString());
+
+        return doc;
+    }
+
+    public static SendDocument getLogsFileBySourceUser(String userId) {
+        //TODO: return a csv file containing logs regarding said user
+        List<StatisticBean> statBeans = getAllLogs();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        for(StatisticBean stat : statBeans){
+             if(stat.getSourceUser().equals(userId)){
+                 returnBeans.add(stat);
+             }
+        }
+
+        try{
+            Writer writer = new FileWriter(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(returnBeans);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+
+        File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+        SendDocument doc = new SendDocument();
+
+        doc.setDocument(statsFile);
+        doc.setCaption(LocalDateTime.now().toString());
+
+        return doc;
+    }
+
+    public static List<StatisticBean> getLogsByAffectedUser(String userId) {
+        List<StatisticBean> statBeans = getAllLogs();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        for(StatisticBean bean : statBeans){
+            if(bean.getAffectedUser() == userId){
+                returnBeans.add(bean);
+            }
+        }
+
+        return returnBeans;
+    }
+
+    public static List<StatisticBean> getLogsByAffectedUserAndEvents(String userId, String[] event) {
+        List<StatisticBean> statBeans = getAllLogs();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        System.out.println("statbeans length: " + statBeans.size());
+        System.out.println("event length: " + event.length);
+
+        for(StatisticBean bean : statBeans){
+            System.out.println("gonna compare: " + bean.getAffectedUser() + " with " + userId);
+            if(bean.getAffectedUser().equals(userId)/* && Arrays.stream(event).anyMatch(bean.getEvent()::equals)*/){
+                System.out.println("found a bean for the userId");
+                for(int i = 0; i < event.length; i++){
+                    System.out.println("gonna compare: " + bean.getEvent() + " with " + event[i]);
+                    if(event[i].equals(bean.getEvent())){
+                        System.out.println("bean is eventy");
+                        returnBeans.add(bean);
+                    }
+                }
+                //returnBeans.add(bean);
+            }
+        }
+
+        return returnBeans;
+    }
+
+    public static SendDocument getLogsFileByEvent(String event) {
+        //returns a csv file containing logs regarding said event
+        List<StatisticBean> statBeans = getAllLogs();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        for(StatisticBean stat : statBeans){
+             if(stat.getEvent().equals(event)){
+                 returnBeans.add(stat);
+             }
+        }
+
+        try{
+            Writer writer = new FileWriter(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(returnBeans);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+
+        File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+        SendDocument doc = new SendDocument();
+
+        doc.setDocument(statsFile);
+        doc.setCaption(LocalDateTime.now().toString());
+
+        return doc;
+    }
+
+    public static SendDocument getLogsFileInDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        //returns a csv file containing logs within this date range
+        List<StatisticBean> statBeans = getAllLogs();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        for(StatisticBean stat : statBeans){
+             if(stat.getTime().isBefore(endDate) && stat.getTime().isAfter(startDate)){
+                 returnBeans.add(stat);
+             }
+        }
+
+        try{
+            Writer writer = new FileWriter(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+            
+            beanToCsv.write(returnBeans);
+            writer.close();
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            e.printStackTrace();
+        }
+
+        File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+        SendDocument doc = new SendDocument();
+
+        doc.setDocument(statsFile);
+        doc.setCaption(LocalDateTime.now().toString());
+
+        return doc;
+    }
+    
+    public static List<StatisticBean> getLogsInDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        //returns a beans within this date range
+        List<StatisticBean> statBeans = getAllLogs();
+        List<StatisticBean> returnBeans = new ArrayList<>();
+
+        for(StatisticBean stat : statBeans){
+             if(stat.getTime().isBefore(endDate) && stat.getTime().isAfter(startDate)){
+                 returnBeans.add(stat);
+             }
+        }
+
+        return returnBeans;
+    }
+    
 }

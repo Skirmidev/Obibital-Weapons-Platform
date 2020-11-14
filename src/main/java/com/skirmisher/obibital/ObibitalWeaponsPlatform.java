@@ -10,6 +10,7 @@ import java.util.List;
 import com.skirmisher.data.*;
 
 public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
+    boolean debug = false;
 
     Long groupId = 0l;
     Long modChatId = 0l;
@@ -18,9 +19,6 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         Context context = new Context();
-
-        System.out.println("ObibitalWeaponsPlatform:: New Update Received");
-        System.out.println(update);
 
         //switch on chat ID
         if(update.getMessage().getChatId().equals(groupId)) {
@@ -32,6 +30,14 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
         } else if (update.getMessage().getChatId().equals(modChatId)) {
             //message in the mod chat, permit command interface
             AdminInterface.run(context, update, this);
+        } else {
+            System.out.println("ObibitalWeaponsPlatform:: New Update Received - unidentified source");
+            System.out.println(update);
+        }
+
+        if(debug){
+            System.out.println("Update: " + update);
+            System.out.println("Context Result: " + context.getResult());
         }
     }
 
@@ -48,6 +54,10 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     
     public Long getModChatId() {
         return modChatId;
+    }
+    
+    public Long getGroupChatId() {
+        return groupId;
     }
 
     public void send(SendMessage message){

@@ -7,10 +7,12 @@ import com.skirmisher.data.beans.ModuleBean;
 import java.util.List;
 
 public class ModuleControl {
-    static boolean stickerSpam = true;
-    static boolean commands = true;
-    static boolean stickerPackBanner = true;
-    static boolean newJoinRestrictions = true;
+    static boolean stickerSpam = false;
+    static boolean commands = false;
+    static boolean stickerPackBanner = false;
+    static boolean newJoinRestrictions = false;
+    static boolean nightTimeRestrictor = false;
+    static boolean imageSpam = false;
 
     public static void runChatModules(Context context, Update update, ObibitalWeaponsPlatform bot){
         
@@ -23,12 +25,21 @@ public class ModuleControl {
             StickerSpam.spamCheck(context, update, bot);
         }
 
+        if(imageSpam) {
+            ImageSpam.spamCheck(context, update, bot);
+        }
+
         if(commands) {
             Commands.command(context, update, bot);
         }
 
         if(newJoinRestrictions) {
             NewJoinRestrictions.manageNewJoin(context, update, bot);
+        }
+
+    
+        if(nightTimeRestrictor) {
+            NightTimeRestrictor.manageNewJoin(context, update, bot);
         }
     }
 
@@ -47,6 +58,12 @@ public class ModuleControl {
                     break;
                 case "newJoinRestrictions":
                     newJoinRestrictions = mod.getEnabled();
+                    break;
+                case "nightTimeRestrictor":
+                    nightTimeRestrictor = mod.getEnabled();
+                    break;
+                case "imageSpam":
+                    imageSpam = mod.getEnabled();
                     break;
             }
         }
