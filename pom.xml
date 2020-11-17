@@ -12,18 +12,19 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <dockerfile-maven-version>1.4.12</dockerfile-maven-version>
+        <telegram.bots.version>5.0.1</telegram.bots.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots</artifactId>
-            <version>4.8.1</version>
+            <version>${telegram.bots.version}</version>
         </dependency>
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots-abilities</artifactId>
-            <version>4.8.1</version>
+            <version>${telegram.bots.version}</version>
         </dependency>
         <dependency>
             <groupId>com.opencsv</groupId>

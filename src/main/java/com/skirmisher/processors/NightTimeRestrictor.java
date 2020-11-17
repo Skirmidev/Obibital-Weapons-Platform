@@ -36,7 +36,7 @@ public class NightTimeRestrictor {
                 perms.setCanSendMessages(false);
                 perms.setCanSendOtherMessages(false);
                 perms.setCanSendPolls(false);
-                perms.setGetCanSendMediaMessages(false);
+                perms.setCanSendMediaMessages(false);
 
                 managePerms.setPermissions(perms);
 
@@ -47,7 +47,7 @@ public class NightTimeRestrictor {
                     //this ensures they are never infinitely restricte
                 } else {
                     managePerms.setUntilDate(Math.toIntExact(nextMorning.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now()))));
-                    managePerms.setChatId(update.getMessage().getChatId());
+                    managePerms.setChatId(update.getMessage().getChatId().toString());
 
                     for(User user : update.getMessage().getNewChatMembers()){
                         managePerms.setUserId(user.getId());
@@ -66,12 +66,14 @@ public class NightTimeRestrictor {
                     }
 
                     
-                    SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+                    SendMessage message = new SendMessage();
+                    message.setChatId(update.getMessage().getChatId().toString());
                     message.setText("Welcome to the chat " + users + "! Due to security concerns, you are unable to send messages until 9am. We apologise for the inconvenience.");
                     message.setReplyToMessageId(update.getMessage().getMessageId());
                     bot.send(message);
 
-                    SendMessage modChatMessage = new SendMessage().setChatId(bot.getModChatId());
+                    SendMessage modChatMessage = new SendMessage();
+                    message.setChatId(bot.getModChatId().toString());
                     modChatMessage.setText(users + "has been muted after joining the chat for the next " + Math.floorDiv(nextMorning.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())),60l) + " minutes");
 
                     //DBLoader.addTimer(action, args, time);

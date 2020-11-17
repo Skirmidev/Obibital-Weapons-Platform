@@ -21,7 +21,7 @@ public class StickerPackBanner {
             System.out.println("StickerPackBanner:: Bannedpacks:" + bannedPacks.toString());
             System.out.println("StickerPackBanner:: Pack:" + source);
             if(bannedPacks.contains(source)){
-                DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId(), update.getMessage().getMessageId());
+                DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId().toString(), update.getMessage().getMessageId());
                 System.out.println("StickerPackBanner:: Sticker not permitted");
                 context.setResult("StickerPackBanner:: Recieved Sticker from Banned Pack");
                 context.setBlockingResult(true);
