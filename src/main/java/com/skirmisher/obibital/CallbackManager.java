@@ -103,7 +103,8 @@ public class CallbackManager {
 
                             //messages
                             editM.setParseMode("MarkdownV2");
-                            String response = "~" + originalMessage + "~\n banned by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
+                            String response = "~" + Utilities.makeMarkdownFriendly(originalMessage) + "~\n Banned by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
+                            System.out.println("Response: " + response);
                             
                             editM.setText(response);
                             bot.execute(editM);
@@ -116,8 +117,8 @@ public class CallbackManager {
                     case "safe":
                         try{
                             editM.setParseMode("MarkdownV2");
-                            String response = "~" + originalMessage + "~\n deemed safe by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
-
+                            String response = "~" + Utilities.makeMarkdownFriendly(originalMessage) + "~\n Deemed safe by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
+                            System.out.println("Response: " + response);
                             editM.setText(response);
                         
                             bot.execute(editM);

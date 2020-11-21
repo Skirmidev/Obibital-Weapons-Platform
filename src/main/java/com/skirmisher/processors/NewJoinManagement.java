@@ -77,9 +77,9 @@ public class NewJoinManagement {
                     text = text + Utilities.makeMarkdownFriendly(user.getLastName());
                 }
                 if(user.getUserName() != null){
-                    text = text + "[ `username: @" + user.getUserName() +"` ] ";
+                    text = text + "\\[ `username: @" + user.getUserName() +"` \\] ";
                 }
-                text = text + "[ `id: " + user.getId() + "` ]";
+                text = text + "\\[ `id: " + user.getId() + "` \\]";
 
                 message.setText(text);
                 message.setParseMode("MarkdownV2");
