@@ -97,39 +97,29 @@ public class CallbackManager {
                 switch(callback[2]){
                     case "ban":
                         try{
-                            System.out.println("alpha");
-                            //todo: add actual banning
+                            //ban user
                             KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Integer.parseInt(userid));
-                            System.out.println("beta");
                             bot.execute(kick);
-                            System.out.println("charlie");
 
                             //messages
                             editM.setParseMode("MarkdownV2");
-                            System.out.println("delta");
-                            String response = "~~" + originalMessage + "~~\r banned by " + update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName();
-                            System.out.println("echo");
-                            response = Utilities.makeMarkdownFriendly(response);
-                            System.out.println("foxtrot");
-                            editM.setParseMode("MarkdownV2");
-                            System.out.println("gamma");
+                            String response = "~" + originalMessage + "~\n banned by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
+                            
                             editM.setText(response);
-                            System.out.println("hotel");
                             bot.execute(editM);
-                            System.out.println("india");
                             DBLoader.logEvent("BAN", update.getCallbackQuery().getFrom().getId().toString(), userid, "New join");
-                            System.out.println("jacob");
                         } catch (TelegramApiException e){
                             System.out.println(e.toString());
                             e.printStackTrace();
                         }
                         break;
                     case "safe":
-                        editM.setParseMode("MarkdownV2");
-                        String response = "~~" + originalMessage + "~~\r deemed safe by " + update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName();
-                        response = Utilities.makeMarkdownFriendly(response);
-                        editM.setText(response);
                         try{
+                            editM.setParseMode("MarkdownV2");
+                            String response = "~" + originalMessage + "~\n deemed safe by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
+
+                            editM.setText(response);
+                        
                             bot.execute(editM);
                             DBLoader.logEvent("MARK SAFE", update.getCallbackQuery().getFrom().getId().toString(), userid, "New Join");
                         } catch (TelegramApiException e){

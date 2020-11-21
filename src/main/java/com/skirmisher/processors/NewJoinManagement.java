@@ -2,6 +2,7 @@ package com.skirmisher.processors;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 import com.skirmisher.obibital.ObibitalWeaponsPlatform;
+import com.skirmisher.obibital.Utilities;
 import com.skirmisher.obibital.Context;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.RestrictChatMember;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -70,17 +71,18 @@ public class NewJoinManagement {
 
                 String text = "New user has joined: ";
                 if(user.getFirstName() != null){
-                    text = text + user.getFirstName() + " ";
+                    text = text + Utilities.makeMarkdownFriendly(user.getFirstName());
                 }
                 if(user.getLastName() != null){
-                    text = text + user.getLastName() + " ";
+                    text = text + Utilities.makeMarkdownFriendly(user.getLastName());
                 }
                 if(user.getUserName() != null){
-                    text = text + "[ username: @" + user.getUserName() +" ] ";
+                    text = text + "[ `username: @" + user.getUserName() +"` ] ";
                 }
-                text = text + "[ id: " + user.getId() + " ]";
+                text = text + "[ `id: " + user.getId() + "` ]";
 
                 message.setText(text);
+                message.setParseMode("MarkdownV2");
                 message.setReplyMarkup(inlineKeyboardMarkup);
 
                 try{        
