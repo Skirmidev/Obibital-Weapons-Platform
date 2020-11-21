@@ -6,11 +6,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.List;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import java.util.Collections;
 
 import com.skirmisher.data.*;
 
@@ -37,10 +32,10 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
             System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: callback Query");
             String callback = update.getCallbackQuery().getData();
             String [] callSplit = callback.split(":");
-            if(callSplit[0].equals("group")) {
+            if(callSplit[0].equals("group") || callSplit[0].equals("g")) {
                 // Group //
                 CallbackManager.manageGroupCallback(context, update, this, callSplit);
-            } else if (callSplit[0].equals("admin")) {
+            } else if (callSplit[0].equals("admin") || callSplit[0].equals("a")) {
                 // Admin //
                 CallbackManager.manageAdminCallback(context, update, this, callSplit);
             }

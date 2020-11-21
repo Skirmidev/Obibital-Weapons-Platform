@@ -31,6 +31,11 @@ public class Commands {
                         context.setResult("Commands: ButtonTest command");
                         context.setBlockingResult(true);
                         break;
+                    case "/formattingtest":
+                        formattingTest(update, bot);
+                        context.setResult("Commands: formattingtest command");
+                        context.setBlockingResult(true);
+                        break;
                     default:
                         unrecognisedCommand(update, bot);
                         break;
@@ -89,6 +94,31 @@ public class Commands {
         message.setChatId(update.getMessage().getChatId().toString());
         message.setText(update.getMessage().getText());
         message.setReplyMarkup(inlineKeyboardMarkup);
+
+        try{
+            bot.execute(message);
+        } catch ( TelegramApiException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    public static void formattingTest(Update update, ObibitalWeaponsPlatform bot){
+        String fullSample = "*bold*" + "\n" + 
+        "_italic_" + "\n" + 
+        "__underline__" + "\n" + 
+        "~strikethrough~" + "\n" + 
+        "[inline URL](http://www.google.com/)" + "\n" + 
+        "[inline mention of a user](tg://user?id=177978498)" + "\n" + 
+        "`inline fixed width code`" + "\n" + 
+        "```pre-formatted inline fixed width code block```" + "\n" + 
+        "```python pre-formatted inline fixed width code block```" + "\n" + 
+        "";
+        
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setParseMode("MarkdownV2");
+        message.setText(fullSample);
 
         try{
             bot.execute(message);
