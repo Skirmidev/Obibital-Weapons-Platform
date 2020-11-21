@@ -16,28 +16,54 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     Long modChatId = 0l;
     List<Long> admins = new ArrayList<>();
 
+    //issue is not caused by wrong values present. :/
+    // public ObibitalWeaponsPlatform(DefaultBotOptions options) {
+    //     super(options);
+    // }
+
     @Override
-    public void onUpdateReceived(Update update) {
+    public void onUpdateReceived(final Update update) {
         Context context = new Context();
 
-        //switch on chat ID
-        if(update.getMessage().getChatId().equals(groupId)) {
-            ModuleControl.runChatModules(context, update, this);
-            //message in the group, process as normal
-        } else if (admins.contains(update.getMessage().getChatId())){
-            //message from an approved admin, permit command interface
-            AdminInterface.run(context, update, this);
-        } else if (update.getMessage().getChatId().equals(modChatId)) {
-            //message in the mod chat, permit command interface
-            AdminInterface.run(context, update, this);
-        } else {
-            System.out.println("ObibitalWeaponsPlatform:: New Update Received - unidentified source");
-            System.out.println(update);
-        }
+        if(update.hasCallbackQuery()){
+            ////////////////////
+            // Callback Query //
+            ////////////////////
+            System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: callback Query");
+            String callback = update.getCallbackQuery().getData();
+            String [] callSplit = callback.split(":");
+            if(callSplit[0].equals("group") || callSplit[0].equals("g")) {
+                // Group //
+                CallbackManager.manageGroupCallback(context, update, this, callSplit);
+            } else if (callSplit[0].equals("admin") || callSplit[0].equals("a")) {
+                // Admin //
+                CallbackManager.manageAdminCallback(context, update, this, callSplit);
+            }
 
-        if(debug){
-            System.out.println("Update: " + update);
-            System.out.println("Context Result: " + context.getResult());
+        } else if (update.hasMessage()) {
+            /////////////
+            // Message //
+            /////////////
+            System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: message");
+            if(update.getMessage().getChatId().equals(groupId)) {
+                ModuleControl.runChatModules(context, update, this);
+                //message in the group, process as normal
+            } else if (admins.contains(update.getMessage().getChatId())){
+                //message from an approved admin, permit command interface
+                AdminInterface.run(context, update, this);
+            } else if (update.getMessage().getChatId().equals(modChatId)) {
+                //message in the mod chat, permit command interface
+                AdminInterface.run(context, update, this);
+            } else {
+                System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: message from unknown source: " + update.getMessage().getChatId());
+                System.out.println(update);
+            }
+
+        } else {
+            /////////////////
+            // Unsupported //
+            /////////////////
+            System.out.println("unrecognised update");
         }
     }
 

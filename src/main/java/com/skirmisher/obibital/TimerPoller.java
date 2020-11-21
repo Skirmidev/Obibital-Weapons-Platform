@@ -63,7 +63,7 @@ public class TimerPoller implements Runnable{
     // UNBAN - userId //
     ////////////////////
     public void unBan(String[] args){
-        UnbanChatMember unban = new UnbanChatMember(bot.getGroupChatId(), Integer.parseInt(args[0]));
+        UnbanChatMember unban = new UnbanChatMember(bot.getGroupChatId().toString(), Integer.parseInt(args[0]));
         boolean success = false;
         try{
             success = bot.execute(unban);
@@ -76,19 +76,22 @@ public class TimerPoller implements Runnable{
             System.out.println("User Unbanned Succesfully");
 
             //send message to user, saying they have been unbanned      
-            SendMessage userMessage = new SendMessage().setChatId(Long.parseLong(args[0]));
+            SendMessage userMessage = new SendMessage();
+            userMessage.setChatId(args[0]);
             userMessage.setText("You have been unbanned from " + DBLoader.configValue("networkName") + " and may now rejoin: " + DBLoader.configValue("groupLink")); //TODO: make this generic  
             bot.send(userMessage);
     
             //send message to modchat, say userid has been unbanned and informed
-            SendMessage modMessage = new SendMessage().setChatId(bot.getModChatId());
+            SendMessage modMessage = new SendMessage();
+            modMessage.setChatId(bot.getModChatId().toString());
             modMessage.setText("User: " + args[0] + " has been unbanned from " + "CHAT NAME and has been informed as such"); //TODO: make this generic, get username from id
             bot.send(modMessage);
 
             DBLoader.logEvent("UNBAN", "TIMED_EVENT", args[0], "");
         } else {
             //send message to modchat, user unban attempted but failed
-            SendMessage modMessage = new SendMessage().setChatId(bot.getModChatId());
+            SendMessage modMessage = new SendMessage();
+            modMessage.setChatId(bot.getModChatId().toString());
             modMessage.setText("User: " + args[0] + " scheduled unban was unsuccesful. Please consult an administrator and consider a manual unbanning");
             bot.send(modMessage);
         }
@@ -100,7 +103,7 @@ public class TimerPoller implements Runnable{
     public void permissions(String [] args){ //this timer is unlikely to be required at any time, given permissions can already be set to expire at a certain time
         RestrictChatMember managePerms = new RestrictChatMember();
         managePerms.setUserId(Integer.parseInt(args[0]));
-        managePerms.setChatId(bot.getGroupChatId());
+        managePerms.setChatId(bot.getGroupChatId().toString());
         
         ChatPermissions perms = new ChatPermissions();
         perms.setCanAddWebPagePreviews(Boolean.parseBoolean(args[1]));
@@ -110,7 +113,7 @@ public class TimerPoller implements Runnable{
         perms.setCanSendMessages(Boolean.parseBoolean(args[5]));
         perms.setCanSendOtherMessages(Boolean.parseBoolean(args[6]));
         perms.setCanSendPolls(Boolean.parseBoolean(args[7]));
-        perms.setGetCanSendMediaMessages(Boolean.parseBoolean(args[8]));
+        perms.setCanSendMediaMessages(Boolean.parseBoolean(args[8]));
 
         managePerms.setPermissions(perms);
 
@@ -155,7 +158,8 @@ public class TimerPoller implements Runnable{
             }
         }
 
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
         message.setText("Events in the last week:\n" + 
             "Warnings: " + warn + "\n" +
             "Bans: " + ban + "\n" +
@@ -174,7 +178,8 @@ public class TimerPoller implements Runnable{
     // sendNotif - userId - message //
     //////////////////////////////////
     public void sendNotif(String [] args){
-        SendMessage message = new SendMessage().setChatId(args[0]);
+        SendMessage message = new SendMessage();
+        message.setChatId(args[0]);
         String info = "";
         for(int i = 1; i < args.length; i++){
             info = info + args[i] + " ";

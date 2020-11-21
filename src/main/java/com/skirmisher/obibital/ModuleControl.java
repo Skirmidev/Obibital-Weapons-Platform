@@ -33,8 +33,12 @@ public class ModuleControl {
             Commands.command(context, update, bot);
         }
 
-        if(newJoinRestrictions) {
-            NewJoinRestrictions.manageNewJoin(context, update, bot);
+        // if(newJoinRestrictions) {
+        //     NewJoinRestrictions.manageNewJoin(context, update, bot);
+        // }
+
+        if(true) {
+            NewJoinManagement.manageNewJoin(context, update, bot);
         }
 
     

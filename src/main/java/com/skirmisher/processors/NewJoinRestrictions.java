@@ -25,14 +25,14 @@ public class NewJoinRestrictions {
             perms.setCanSendMessages(true);
             perms.setCanSendOtherMessages(false);
             perms.setCanSendPolls(false);
-            perms.setGetCanSendMediaMessages(false);
+            perms.setCanSendMediaMessages(false);
 
             managePerms.setPermissions(perms);
 
 
             long ut1 = Instant.now().getEpochSecond();
             managePerms.setUntilDate(Integer.parseInt(String.valueOf(ut1)) + 86400); //unix time, 1 day restriction
-            managePerms.setChatId(update.getMessage().getChatId());
+            managePerms.setChatId(update.getMessage().getChatId().toString());
 
             for(User user : update.getMessage().getNewChatMembers()){
                 managePerms.setUserId(user.getId());

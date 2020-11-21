@@ -48,9 +48,9 @@ public class StickerSpam {
         StickerPackBanner.banNewSticker(lastStickers.get(stickerCount-1).getMessage().getSticker().getSetName());
 
         ArrayList<DeleteMessage> toBeDeleted = new ArrayList<>();
-        toBeDeleted.add(new DeleteMessage(lastStickers.get(stickerCount-1).getMessage().getChatId(), lastStickers.get(stickerCount-1).getMessage().getMessageId()));
-        toBeDeleted.add(new DeleteMessage(lastStickers.get(stickerCount-2).getMessage().getChatId(), lastStickers.get(stickerCount-2).getMessage().getMessageId()));
-        toBeDeleted.add(new DeleteMessage(lastStickers.get(stickerCount-3).getMessage().getChatId(), lastStickers.get(stickerCount-3).getMessage().getMessageId()));
+        toBeDeleted.add(new DeleteMessage(lastStickers.get(stickerCount-1).getMessage().getChatId().toString(), lastStickers.get(stickerCount-1).getMessage().getMessageId()));
+        toBeDeleted.add(new DeleteMessage(lastStickers.get(stickerCount-2).getMessage().getChatId().toString(), lastStickers.get(stickerCount-2).getMessage().getMessageId()));
+        toBeDeleted.add(new DeleteMessage(lastStickers.get(stickerCount-3).getMessage().getChatId().toString(), lastStickers.get(stickerCount-3).getMessage().getMessageId()));
         for(DeleteMessage del : toBeDeleted){
             try{
                 bot.execute(del);
@@ -59,9 +59,9 @@ public class StickerSpam {
             }
         }
 
-        SendMessage message = new SendMessage()
-        .setChatId(update.getMessage().getChatId())
-        .setText("Repeated use has caused this sticker pack to be banned. Keep it Clean.");
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText("Repeated use has caused this sticker pack to be banned. Keep it Clean.");
         bot.send(message);
 
         lastStickers.remove(stickerCount-1);
@@ -72,7 +72,7 @@ public class StickerSpam {
     }
 
     private static void spamDetected(Context context, Update update, ObibitalWeaponsPlatform bot){
-        DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId(), update.getMessage().getMessageId());
+        DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId().toString(), update.getMessage().getMessageId());
         try{
             bot.execute(delete);
             context.setResult("StickerSpam:: Sticker Spam - Deleted");
@@ -82,9 +82,9 @@ public class StickerSpam {
         }
 
         if(stickerCount == 4){
-            SendMessage message = new SendMessage()
-            .setChatId(update.getMessage().getChatId())
-            .setText("Please be considerate of other users and avoid spamming the chat with stickers");
+            SendMessage message = new SendMessage();
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please be considerate of other users and avoid spamming the chat with stickers");
             bot.send(message);
             
             DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());

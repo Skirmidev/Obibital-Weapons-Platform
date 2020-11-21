@@ -5,8 +5,10 @@ import com.skirmisher.obibital.ObibitalWeaponsPlatform;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import com.skirmisher.obibital.Context;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import java.util.List;
+import java.util.Collections;
 import java.util.ArrayList;
 
 public class Commands {
@@ -29,6 +31,11 @@ public class Commands {
                         context.setResult("Commands: ButtonTest command");
                         context.setBlockingResult(true);
                         break;
+                    case "/formattingtest":
+                        formattingTest(update, bot);
+                        context.setResult("Commands: formattingtest command");
+                        context.setBlockingResult(true);
+                        break;
                     default:
                         unrecognisedCommand(update, bot);
                         break;
@@ -39,9 +46,9 @@ public class Commands {
     }
 
     public static void help(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage()
-                .setChatId(update.getMessage().getChatId())
-                .setText(   "OBIBITAL WEAPONS PLATFORM V-0.0.1"  + "\n" +
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText(   "OBIBITAL WEAPONS PLATFORM V-0.0.1"  + "\n" +
                             "This is a standardised help message"  + "\n" +
                             "IF you find this helpful, something is wrong"  + "\n" +
                             "");
@@ -50,28 +57,74 @@ public class Commands {
     }
 
     public static void unrecognisedCommand(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage()
-                .setChatId(update.getMessage().getChatId())
-                .setText("Your command was not recognised.");
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText("Your command was not recognised.");
 
         bot.send(message);
     }
 
     public static void buttonTest(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage()
-                .setChatId(update.getMessage().getChatId())
-                .setText("I will now into the button");
+        
+        final List<InlineKeyboardButton> keyboard = new ArrayList<InlineKeyboardButton>(3);
 
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-        List<InlineKeyboardButton> rowInline = new ArrayList<>();
-        rowInline.add(new InlineKeyboardButton().setText("I am a button :)").setCallbackData("update_msg_text"));
-        // Set the keyboard to the markup
-        rowsInline.add(rowInline);
-        // Add it to the message
-        markupInline.setKeyboard(rowsInline);
-        message.setReplyMarkup(markupInline);
+        InlineKeyboardButton but = new InlineKeyboardButton();
+        but.setText("Do Not Press");
+        but.setCallbackData("group:angewy");
 
-        bot.send(message);
+        
+        InlineKeyboardButton but2 = new InlineKeyboardButton();
+        but2.setText("Press");
+        but2.setCallbackData("group:peacefur");
+
+        
+        InlineKeyboardButton but3 = new InlineKeyboardButton();
+        but3.setText("This will generate a message");
+        but3.setCallbackData("group:messagey");
+
+        
+        keyboard.add(but);
+        keyboard.add(but2);
+        keyboard.add(but3);
+        
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(Collections.singletonList(keyboard));
+        
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText(update.getMessage().getText());
+        message.setReplyMarkup(inlineKeyboardMarkup);
+
+        try{
+            bot.execute(message);
+        } catch ( TelegramApiException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    public static void formattingTest(Update update, ObibitalWeaponsPlatform bot){
+        String fullSample = "*bold*" + "\n" + 
+        "_italic_" + "\n" + 
+        "__underline__" + "\n" + 
+        "~strikethrough~" + "\n" + 
+        "[inline URL](http://www.google.com/)" + "\n" + 
+        "[inline mention of a user](tg://user?id=177978498)" + "\n" + 
+        "`inline fixed width code`" + "\n" + 
+        "```pre-formatted inline fixed width code block```" + "\n" + 
+        "```python pre-formatted inline fixed width code block```" + "\n" + 
+        "";
+        
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setParseMode("MarkdownV2");
+        message.setText(fullSample);
+
+        try{
+            bot.execute(message);
+        } catch ( TelegramApiException e) {
+            e.printStackTrace();
+        }
+        
     }
 }

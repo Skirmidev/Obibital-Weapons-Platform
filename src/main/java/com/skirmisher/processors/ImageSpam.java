@@ -28,7 +28,7 @@ public class ImageSpam {
     }
 
     private static void spamDetected(Context context, Update update, ObibitalWeaponsPlatform bot){
-        DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId(), update.getMessage().getMessageId());
+        DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId().toString(), update.getMessage().getMessageId());
         try{
             bot.execute(delete);
             context.setResult("ImageSpam:: Image Spam - Deleted");
@@ -38,9 +38,9 @@ public class ImageSpam {
         }
 
         if(imageCount == 4){
-            SendMessage message = new SendMessage()
-            .setChatId(update.getMessage().getChatId())
-            .setText("Please be considerate of other users and avoid spamming the chat with images");
+            SendMessage message = new SendMessage();
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please be considerate of other users and avoid spamming the chat with images");
             bot.send(message);
             
             DBLoader.logEvent("IMAGESPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());
