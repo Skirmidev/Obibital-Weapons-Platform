@@ -69,6 +69,18 @@ public class CallbackManager {
                 //TODO log the response in the DB, tie userid to messageid to good/bad
                 break;
         }
+
+        
+        AnswerCallbackQuery answer = new AnswerCallbackQuery();
+        answer.setCallbackQueryId(update.getCallbackQuery().getId());
+        answer.setShowAlert(false);
+        answer.setText("Thank you for your feedback");
+
+        try{
+            bot.execute(answer);
+        } catch (TelegramApiException e){
+            e.printStackTrace();
+        }
     }
 
     ////////////////////////
