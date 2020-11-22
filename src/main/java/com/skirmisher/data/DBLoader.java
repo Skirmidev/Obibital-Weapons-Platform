@@ -4,6 +4,7 @@ import com.opencsv.bean.*;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -731,8 +732,9 @@ public class DBLoader {
         SendDocument doc = new SendDocument();
 
         File statsFile = new File(dataPath + "statistics.csv");
+        InputFile inFile = new InputFile(statsFile);
 
-        doc.setDocument(statsFile);
+        doc.setDocument(inFile);
         doc.setCaption(LocalDateTime.now().toString());
 
         return doc;
@@ -761,8 +763,9 @@ public class DBLoader {
 
         File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
         SendDocument doc = new SendDocument();
+        InputFile inFile = new InputFile(statsFile);
 
-        doc.setDocument(statsFile);
+        doc.setDocument(inFile);
         doc.setCaption(LocalDateTime.now().toString());
 
         return doc;
@@ -829,8 +832,9 @@ public class DBLoader {
 
         File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
         SendDocument doc = new SendDocument();
+        InputFile inFile = new InputFile(statsFile);
 
-        doc.setDocument(statsFile);
+        doc.setDocument(inFile);
         doc.setCaption(LocalDateTime.now().toString());
 
         return doc;
@@ -859,8 +863,9 @@ public class DBLoader {
 
         File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
         SendDocument doc = new SendDocument();
+        InputFile inFile = new InputFile(statsFile);
 
-        doc.setDocument(statsFile);
+        doc.setDocument(inFile);
         doc.setCaption(LocalDateTime.now().toString());
 
         return doc;

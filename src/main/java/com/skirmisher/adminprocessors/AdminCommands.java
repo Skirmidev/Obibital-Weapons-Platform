@@ -288,9 +288,9 @@ public class AdminCommands {
     // /help //
     ///////////
     public static void help(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage()
-                .setChatId(update.getMessage().getChatId())
-                .setText(   "OBIBITAL WEAPONS PLATFORM V-0.0.1"  + "\n" +
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText(   "OBIBITAL WEAPONS PLATFORM V-0.0.1"  + "\n" +
                             "The following admin command are available (not case sensitive)"  + "\n" +
                             "/help"  + "\n" +
                             "/addAdmin [userId]"  + "\n" +
@@ -325,9 +325,9 @@ public class AdminCommands {
     // command Not Enabled //
     /////////////////////////
     public static void commandNotEnabled(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage()
-                .setChatId(update.getMessage().getChatId())
-                .setText(   "This command is not currently enabled. Please consult an admin and the config file");
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText(   "This command is not currently enabled. Please consult an admin and the config file");
 
         bot.send(message);
     }
@@ -336,9 +336,9 @@ public class AdminCommands {
     // /unrecognisedCommand //
     //////////////////////////
     public static void unrecognisedCommand(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage()
-                .setChatId(update.getMessage().getChatId())
-                .setText("Your command was not recognised.");
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText("Your command was not recognised.");
 
         bot.send(message);
     }
@@ -347,7 +347,8 @@ public class AdminCommands {
     // /addAdmin [admin] //
     ///////////////////////
     public static void addAdmin(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -368,21 +369,21 @@ public class AdminCommands {
             } else if ( m_userName.find() ) {
                 //find the userid and add the admin
                 //TODO: add @username functionality
-                message.setChatId(update.getMessage().getChatId())
-                .setText("@usernames are not supported at this time, please use userId");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("@usernames are not supported at this time, please use userId");
 
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. please use the userid as input");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. please use the userid as input");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/addAdmin userid`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/addAdmin userid`");
 
             bot.send(message);
         }
@@ -392,7 +393,8 @@ public class AdminCommands {
     // /removeAdmin [admin] //
     //////////////////////////
     public static void removeAdmin(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -413,21 +415,21 @@ public class AdminCommands {
             } else if ( m_userName.find() ) {
                 //find the userid and remove from admin
                 //TODO: add @username functionality
-                message.setChatId(update.getMessage().getChatId())
-                .setText("@usernames are not supported at this time, please use userId");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("@usernames are not supported at this time, please use userId");
 
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. please use the userid as input");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. please use the userid as input");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/removeAdmin userid`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/removeAdmin userid`");
 
             bot.send(message);
         }
@@ -437,7 +439,8 @@ public class AdminCommands {
     // /listAdmins //
     /////////////////
     public static void listAdmins(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
         String response = "Current Admin List:" + "\n";
         List<Long> admins = DBLoader.getAdmins();
 
@@ -453,7 +456,8 @@ public class AdminCommands {
     // /enableModule [module] //
     ////////////////////////////
     public static void enableModule(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -468,21 +472,21 @@ public class AdminCommands {
 
                     ModuleControl.reloadModules();
                 } else {
-                    message.setChatId(update.getMessage().getChatId());
+                    message.setChatId(update.getMessage().getChatId().toString());
                     message.setText(result);
                 }
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. module names are comprised of only letters");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. module names are comprised of only letters");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/addModule [modulename]`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/addModule [modulename]`");
 
             bot.send(message);
         }
@@ -492,7 +496,8 @@ public class AdminCommands {
     // /disableModule [module] //
     /////////////////////////////
     public static void disableModule(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -507,21 +512,21 @@ public class AdminCommands {
 
                     ModuleControl.reloadModules();
                 } else {
-                    message.setChatId(update.getMessage().getChatId());
+                    message.setChatId(update.getMessage().getChatId().toString());
                     message.setText(result);
                 }
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. module names are comprised of only letters");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. module names are comprised of only letters");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/addModule [modulename]`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/addModule [modulename]`");
 
             bot.send(message);
         }
@@ -531,7 +536,8 @@ public class AdminCommands {
     // /getModules //
     /////////////////
     public static void getModules(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
 
         List<ModuleBean> modules = DBLoader.getModules();
         
@@ -549,7 +555,8 @@ public class AdminCommands {
     // /moduleStatus [moduleName] //
     ////////////////////////////////
     public static void moduleStatus(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -564,15 +571,15 @@ public class AdminCommands {
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. module names are comprised of only letters");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. module names are comprised of only letters");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/addModule [modulename]`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/addModule [modulename]`");
 
             bot.send(message);
         }
@@ -582,11 +589,12 @@ public class AdminCommands {
     // /addModule [module] ///
     //////////////////////////
     public static void addModule(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
         message.setText("WARNING: This is an emergency command and should not be required.");
         bot.send(message);
 
-        message.setChatId(bot.getModChatId());
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -605,15 +613,15 @@ public class AdminCommands {
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. module names are comprised of only letters");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. module names are comprised of only letters");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/addModule [modulename]`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/addModule [modulename]`");
 
             bot.send(message);
         }
@@ -623,11 +631,12 @@ public class AdminCommands {
     // /removeModule [module] //
     ////////////////////////////
     public static void removeModule(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
         message.setText("WARNING: This is an emergency command and should not be required.");
         bot.send(message);
 
-        message.setChatId(bot.getModChatId());
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -646,15 +655,15 @@ public class AdminCommands {
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. module names are comprised of only letters");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. module names are comprised of only letters");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/removeModule [modulename]`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/removeModule [modulename]`");
 
             bot.send(message);
         }
@@ -664,7 +673,8 @@ public class AdminCommands {
     // /banPack [packname] ///
     //////////////////////////
     public static void banPack(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -683,15 +693,15 @@ public class AdminCommands {
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. stickerpack names are comprised of only letters (may be incorrect)");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. stickerpack names are comprised of only letters (may be incorrect)");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/banPack [packName]`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/banPack [packName]`");
 
             bot.send(message);
         }
@@ -701,7 +711,8 @@ public class AdminCommands {
     // /unbanPack [packname] //
     ////////////////////////////
     public static void unbanPack(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -720,15 +731,15 @@ public class AdminCommands {
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. stickerpack are comprised of only letters (may be incorrect)");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. stickerpack are comprised of only letters (may be incorrect)");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/unbanPack [packname]`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/unbanPack [packname]`");
 
             bot.send(message);
         }
@@ -738,7 +749,8 @@ public class AdminCommands {
     // /getBannedPacks //
     /////////////////////
     public static void getBannedPacks(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
 
         List<String> bannedPacks = DBLoader.GetBannedStickers();
         
@@ -758,7 +770,8 @@ public class AdminCommands {
     public static void createUnbanTimer(Update update, ObibitalWeaponsPlatform bot, String[] args){
 
         if(args.length != 4){
-            SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+            SendMessage message = new SendMessage();
+            message.setChatId(update.getMessage().getChatId().toString());
             message.setText("Incorrect Arguments Supplied. Please use the format /createUnbanTimer [userid] [durationValue] [durationField]");
             bot.send(message);
             return;
@@ -779,7 +792,8 @@ public class AdminCommands {
                 expiryTime = expiryTime.plusMonths(Long.parseLong(args[2]));
                 break; 
             default:    
-                SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+                SendMessage message = new SendMessage();
+                message.setChatId(update.getMessage().getChatId().toString());
                 message.setText("Incorrect Arguments Supplied. durationField should be minutes, days, weeks, or months");
                 bot.send(message);
                 return;
@@ -794,7 +808,8 @@ public class AdminCommands {
     // /getLogs //
     ////////////////////////////////////////////////////////
     public static void getLogs(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
         List<StatisticBean> logs = DBLoader.getLogs();
         String text = "Last " + logs.size() + " log entries: \n";
 
@@ -812,7 +827,7 @@ public class AdminCommands {
     public static void getAllLogs(Update update, ObibitalWeaponsPlatform bot){
         
         SendDocument doc = DBLoader.getLogsFile();
-        doc.setChatId(update.getMessage().getChatId());
+        doc.setChatId(update.getMessage().getChatId().toString());
         doc.setReplyToMessageId(update.getMessage().getMessageId());
 
         try{
@@ -826,7 +841,8 @@ public class AdminCommands {
     // /ban [user] [durationVal] [durationField] [reason] //
     ////////////////////////////////////////////////////////
     public static void ban(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 3){
             // args supplied, check if valid
@@ -852,14 +868,17 @@ public class AdminCommands {
                         expiryTime = expiryTime.plusMonths(Long.parseLong(args[2]));
                         break; 
                     default:    
-                        message = new SendMessage().setChatId(update.getMessage().getChatId());
+                        message = new SendMessage();
+                        message.setChatId(update.getMessage().getChatId().toString());
                         message.setText("Incorrect Arguments Supplied. durationField should be minutes, days, weeks, or months");
                         bot.send(message);
                     return;
                 }
 
+                int unbanTime = Math.toIntExact(expiryTime.atZone(ZoneId.systemDefault()).toEpochSecond());
+
                 KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Integer.parseInt(args[1]));
-                kick.setUntilDate(expiryTime.toInstant(ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())));
+                kick.setUntilDate(unbanTime);
                 boolean success = true;
                 try{
                     bot.execute(kick);
@@ -893,21 +912,21 @@ public class AdminCommands {
             } else if ( m_userName.find() ) {
                 //find the userid and add the admin
                 //TODO: add @username functionality
-                message.setChatId(update.getMessage().getChatId())
-                .setText("@usernames are not supported at this time, please use userId");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("@usernames are not supported at this time, please use userId");
 
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. please use the userid as input");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. please use the userid as input");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/ban userid durationVal durationField reason`. To permaban use /permaban user reason");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/ban userid durationVal durationField reason`. To permaban use /permaban user reason");
 
             bot.send(message);
         }
@@ -917,7 +936,8 @@ public class AdminCommands {
     // /warn [user] [reason] //
     ////////////////////////////////////////////////////////
     public static void warn(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(bot.getModChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(bot.getModChatId().toString());
 
         if(args.length > 1){
             // args supplied, check if valid
@@ -942,21 +962,21 @@ public class AdminCommands {
             } else if ( m_userName.find() ) {
                 //find the userid and add the admin
                 //TODO: add @username functionality
-                message.setChatId(update.getMessage().getChatId())
-                .setText("@usernames are not supported at this time, please use userId");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("@usernames are not supported at this time, please use userId");
 
                 bot.send(message);
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. please use the userid as input");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. please use the userid as input");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/warn userid reason`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/warn userid reason`");
 
             bot.send(message);
         }
@@ -967,7 +987,7 @@ public class AdminCommands {
     //////////////////////
     public static void getLastWeekLogs(Update update, ObibitalWeaponsPlatform bot){
         SendDocument doc = DBLoader.getLogsFileInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
-        doc.setChatId(update.getMessage().getChatId());
+        doc.setChatId(update.getMessage().getChatId().toString());
         doc.setReplyToMessageId(update.getMessage().getMessageId());
 
         try{
@@ -1011,7 +1031,8 @@ public class AdminCommands {
             }
         }
 
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
         message.setText("Events in the last week:\n" + 
             "Warnings: " + warn + "\n" +
             "Bans: " + ban + "\n" +
@@ -1029,7 +1050,7 @@ public class AdminCommands {
     public static void getLogsByUser(Update update, ObibitalWeaponsPlatform bot, String[] args){
         if(args.length > 1){
             SendDocument doc = DBLoader.getLogsFileBySourceUser(args[1]);
-            doc.setChatId(update.getMessage().getChatId());
+            doc.setChatId(update.getMessage().getChatId().toString());
             doc.setReplyToMessageId(update.getMessage().getMessageId());
 
             try{
@@ -1039,9 +1060,9 @@ public class AdminCommands {
             }
         } else {
             // please supply a valid username or userid
-            SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/getLogsByUser [userId]`");
+            SendMessage message = new SendMessage();
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/getLogsByUser [userId]`");
 
             bot.send(message);
         }
@@ -1051,14 +1072,15 @@ public class AdminCommands {
     // /usernameFromId [userId] //
     /////////////////////////////
     public static void usernameFromId(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
         if(args.length > 1){
             // args supplied, check if valid
             m_userId = p_userId.matcher(args[1]);
             if (m_userId.find() ) {
 
                 GetChat chat = new GetChat();
-                chat.setChatId(Long.parseLong(args[1]));
+                chat.setChatId(args[1]);
 
                 Chat result = null;
 
@@ -1080,15 +1102,15 @@ public class AdminCommands {
 
             } else {
                 //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId())
-                .setText("incorrect format. please use the userid as input");
+                message.setChatId(update.getMessage().getChatId().toString());
+                message.setText("incorrect format. please use the userid as input");
 
                 bot.send(message);
             }
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/usernameFromId userid`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/usernameFromId userid`");
 
             bot.send(message);
         }
@@ -1098,11 +1120,11 @@ public class AdminCommands {
     // /idFromUsername [username] //
     /////////////////////////////
     public static void idFromUsername(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
-        message.setChatId(update.getMessage().getChatId())
-            .setText("This method does not work, please find a solution for the problem");
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
+        message.setText("This method does not work, please find a solution for the problem");
 
-            bot.send(message);
+        bot.send(message);
         if(args.length > 1){
             // args supplied, check if valid
             //m_userName = p_userName.matcher(args[1]);
@@ -1138,8 +1160,8 @@ public class AdminCommands {
             //}
         } else {
             // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId())
-            .setText("Please provide the correct input `/idFromUsername username`");
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please provide the correct input `/idFromUsername username`");
 
             bot.send(message);
         }
@@ -1149,7 +1171,8 @@ public class AdminCommands {
     // /getId // must be in response to a message //
     ////////////////////////////////////////////////
     public static void getId(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage().setChatId(update.getMessage().getChatId());
+        SendMessage message = new SendMessage();
+        message.setChatId(update.getMessage().getChatId().toString());
         
         if(update.getMessage().getReplyToMessage() != null){
             //replied to a message, lets get the userid of it

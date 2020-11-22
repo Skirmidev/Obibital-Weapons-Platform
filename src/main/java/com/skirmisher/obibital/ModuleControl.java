@@ -13,33 +13,42 @@ public class ModuleControl {
     static boolean newJoinRestrictions = false;
     static boolean nightTimeRestrictor = false;
     static boolean imageSpam = false;
+    static boolean newJoinManagement = false;
+    static boolean mediaSpam = false;
 
     public static void runChatModules(Context context, Update update, ObibitalWeaponsPlatform bot){
         
 
         if(stickerPackBanner) {
-            StickerPackBanner.checkValidity(context, update, bot);
+            context = StickerPackBanner.checkValidity(context, update, bot);
         }
 
         if(stickerSpam) {
-            StickerSpam.spamCheck(context, update, bot);
+            context = StickerSpam.spamCheck(context, update, bot);
         }
 
         if(imageSpam) {
-            ImageSpam.spamCheck(context, update, bot);
+            context = ImageSpam.spamCheck(context, update, bot);
         }
 
         if(commands) {
-            Commands.command(context, update, bot);
+            context = Commands.command(context, update, bot);
         }
 
-        if(newJoinRestrictions) {
-            NewJoinRestrictions.manageNewJoin(context, update, bot);
+        // if(newJoinRestrictions) {
+        //     NewJoinRestrictions.manageNewJoin(context, update, bot);
+        // }
+
+        if(newJoinManagement) {
+            context = NewJoinManagement.manageNewJoin(context, update, bot);
         }
 
-    
+        if(mediaSpam) {
+            context = MediaSpam.spamCheck(context, update, bot);
+        }
+
         if(nightTimeRestrictor) {
-            NightTimeRestrictor.manageNewJoin(context, update, bot);
+            context = NightTimeRestrictor.manageNewJoin(context, update, bot);
         }
     }
 
