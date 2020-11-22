@@ -18,10 +18,10 @@ public class CallbackManager {
 
 
     public static Context manageGroupCallback(Context context, Update update, ObibitalWeaponsPlatform bot, String[] callback){
-        System.out.println("CallbackManager:: manageGroupCallback:: " +callback[1]);
+        System.out.println("CallbackManager:: manageGroupCallback:: " + callback[1]);
         switch (callback[1]) {
-            case "angewy":
-                //angewy(context, update, bot);
+            case "feedback":
+                feedback(context, update, bot, callback);
                 break;
             
             case "peacefur":
@@ -55,6 +55,20 @@ public class CallbackManager {
             break;
         }
         return context;
+    }
+
+    static void feedback(Context context, Update update, ObibitalWeaponsPlatform bot, String[] callback){
+        context.setBlockingResult(true);
+        context.setResult("Callback:: group:: feedback");
+
+        switch(callback[2]){
+            case "good":
+                //TODO log the response in the DB, tie userid to messageid to good/bad
+                break;
+            case "bad":
+                //TODO log the response in the DB, tie userid to messageid to good/bad
+                break;
+        }
     }
 
     ////////////////////////
