@@ -192,7 +192,91 @@
                                 <argument>obibital-platform</argument>
                             </arguments>
                         </configuration>
-                    </execution>      
+                    </execution>     
+
+                    <!-- OPTIONAL volume refreshing -->
+                    <!-- <execution>
+                        <id>remove dbconfig volume</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <successCodes>
+                                <successCode>0</successCode>
+                                <successCode>1</successCode>
+                            </successCodes>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>volume</argument>
+                                <argument>rm</argument>
+                                <argument>obibital-db-config</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>    
+                    <execution>
+                        <id>remove dbtables volume</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <successCodes>
+                                <successCode>0</successCode>
+                                <successCode>1</successCode>
+                            </successCodes>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>volume</argument>
+                                <argument>rm</argument>
+                                <argument>obibital-db-tablespace</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>     -->
+
+
+                    <!-- -->
+
+                    <execution>
+                        <id>create dbconfig volume</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <successCodes>
+                                <successCode>0</successCode>
+                            </successCodes>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>volume</argument>
+                                <argument>create</argument>
+                                <argument>obibital-db-config</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>    
+                    <execution>
+                        <id>create tablespace volume</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <successCodes>
+                                <successCode>0</successCode>
+                            </successCodes>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>volume</argument>
+                                <argument>create</argument>
+                                <argument>obibital-db-tablespace</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>    
                     <execution>
                         <id>create new container</id>
                         <phase>install</phase>
@@ -207,8 +291,10 @@
                                 <argument>--name</argument>
                                 <argument>obibital-platform</argument>
                                 <argument>-it</argument>
-                                <argument>--mount</argument>
-                                <argument>type=bind,source=${project.basedir}${file.separator}dockerdata,target=/src/main/data</argument>
+                                <argument>-v</argument>
+                                <argument>obibital-db-config:/database/config</argument>
+                                <argument>-v</argument>
+                                <argument>obibital-db-tablespace:/database/tables</argument>
                                 <argument>--detach</argument>
                                 <argument>--restart</argument>
                                 <argument>unless-stopped</argument>
@@ -221,3 +307,8 @@
         </plugins>
     </build>
 </project>
+
+
+<!--
+                                <argument>z-z-user</argument>
+                                <argument>postgres</argument> -->
