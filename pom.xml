@@ -37,6 +37,11 @@
             <version>1.18.12</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.18.jre7</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -76,7 +81,7 @@
             </plugin>
 
             <!-- copy the data files to where they are needed (if not already present). by default should not overwrite -->
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
@@ -92,10 +97,8 @@
                                 <if>
                                     <available file="${project.basedir}/dockerdata/"/>
                                     <then>
-                                        <!-- Folder already exists means -->
                                     </then>
                                     <else>
-                                        <!-- Do something with it -->
                                         <copy todir="${project.basedir}/dockerdata/">
                                             <fileset dir="${project.basedir}/src/main/data/" />
                                         </copy>
@@ -123,7 +126,7 @@
                         <version>1.8.1</version>
                     </dependency>
                 </dependencies>
-            </plugin>
+            </plugin> -->
 
             <plugin>
                 <groupId>com.spotify</groupId>
@@ -195,7 +198,7 @@
                     </execution>     
 
                     <!-- OPTIONAL volume refreshing -->
-                    <!-- <execution>
+                    <execution>
                         <id>remove dbconfig volume</id>
                         <phase>install</phase>
                         <goals>
@@ -234,7 +237,7 @@
                                 <argument>obibital-db-tablespace</argument>
                             </arguments>
                         </configuration>
-                    </execution>     -->
+                    </execution>    
 
 
                     <!-- -->

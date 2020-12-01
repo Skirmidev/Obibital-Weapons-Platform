@@ -28,7 +28,7 @@ public class MediaSpam {
     }
 
     private static void spamDetected(Context context, Update update, ObibitalWeaponsPlatform bot){
-        DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId(), update.getMessage().getMessageId());
+        DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId().toString(), update.getMessage().getMessageId());
         try{
             bot.execute(delete);
             context.setResult("MediaSpam:: Media Spam - Deleted");
@@ -38,12 +38,12 @@ public class MediaSpam {
         }
 
         if(mediaCount == 4){
-            SendMessage message = new SendMessage()
-            .setChatId(update.getMessage().getChatId())
-            .setText("Please be considerate of other users and avoid spamming the chat with images, videos, gifs or stickers");
+            SendMessage message = new SendMessage();
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("Please be considerate of other users and avoid spamming the chat with images, videos, gifs or stickers");
             bot.send(message);
             
-            DBLoader.logEvent("MEDIASPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());
+            DBLoader.logEvent("MEDIASPAM", update.getMessage().getFrom().getId(), 0, "Spammer: " + update.getMessage().getFrom().getUserName());
         }
     }
 }

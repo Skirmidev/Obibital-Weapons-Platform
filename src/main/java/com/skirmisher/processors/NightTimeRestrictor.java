@@ -56,7 +56,7 @@ public class NightTimeRestrictor {
                         context.setBlockingResult(true);
                         users = users + "@" + user.getUserName() + " ";
 
-                        DBLoader.logEvent("NIGHT_JOIN", "", user.getUserName(), "");
+                        DBLoader.logEvent("NIGHT_JOIN", 0, user.getId(), "");
 
                         try{        
                             bot.execute(managePerms);

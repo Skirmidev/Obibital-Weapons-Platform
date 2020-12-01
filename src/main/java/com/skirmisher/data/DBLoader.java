@@ -4,7 +4,6 @@ import com.opencsv.bean.*;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -15,753 +14,477 @@ import java.util.List;
 import java.util.ArrayList;
 import com.skirmisher.data.beans.*;
 import java.time.*;
+import java.util.Map;
+import java.util.HashMap;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
+
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 public class DBLoader {
-    static String dataPath = "src/main/data/";
 
-    static String configFile = "config.csv";
-    static String adminsFile = "admins.csv";
-    static String bannedStickersFile = "bannedStickers.csv";
-    static String modulesFile = "modules.csv";
-
-    static Path configPath = Paths.get(dataPath+configFile);
-    static Path adminsPath = Paths.get(dataPath+adminsFile);
-    static Path bannedStickersPath = Paths.get(dataPath+bannedStickersFile);
-    static Path modulesPath = Paths.get(dataPath+modulesFile);
+    static String url = "jdbc:postgresql://localhost:5432/obibital-db";
+    static String user = "postgres";
     
-    ///////////////////////////////////////////
-    // Config                                //
-    ///////////////////////////////////////////
-    public static List<ConfigBean> loadConfig() {
-        List<ConfigBean> config = new ArrayList<>();
+    // ///////////////////////////////////////////
+    // // Config                                //
+    // ///////////////////////////////////////////
+    // public static List<ConfigBean> loadConfig() {
+    // }
 
-        try (BufferedReader br = Files.newBufferedReader(configPath,
-                StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<ConfigBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(ConfigBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(ConfigBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            config = csvToBean.parse();
-
-            
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        return config;
-    }
-
-    public static void saveConfig(List<ConfigBean> input) {
-        try{
-            Writer writer = new FileWriter(dataPath+configFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-            beanToCsv.write(input);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // public static void saveConfig(List<ConfigBean> input) {
+    // }
 
     public static String configValue(String value){
-        List<ConfigBean> config = loadConfig();
+        String query = "SELECT value FROM config WHERE element = '" + value + "'";
 
-        for(ConfigBean bean : config){
-            if(bean.getElement().equals(value)){
-                return bean.getValue();
-            }
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
+
+            rs.next();
+            String returnVal = rs.getString(1);
+            
+            st.close();
+            return returnVal;
+        } catch (SQLException ex) {
+            System.out.println("Exceptioned: " + ex.getMessage());
+            ex.printStackTrace();
         }
-        System.out.println("FAILEDTOLOAD: " + value);
+
         return "FAILEDTOLOAD: " + value;
     }
 
     public static void updateConfigValue(String elementToUpdate, String value){
-        if(elementToUpdate == "botusername" || elementToUpdate == "bottoken" ){
-            return;
-        }
-        List<ConfigBean> config = loadConfig();
-        List<ConfigBean> updatedConfig = new ArrayList<ConfigBean>();
+        String query = "UPDATE config SET value = ? WHERE element = ?";
 
-        for(ConfigBean bean : config){
-            if(bean.getElement().equals(elementToUpdate)){
-                bean.setValue(value);
-            }
-            updatedConfig.add(bean);
-        }
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setString(1, value);
+            pst.setString(2, elementToUpdate);
+            pst.executeUpdate();
 
-        saveConfig(updatedConfig);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    ///////////////////////////////////////////
-    // Banned Sticker Packs                  //
-    ///////////////////////////////////////////
+    // ///////////////////////////////////////////
+    // // Banned Sticker Packs                  //
+    // ///////////////////////////////////////////
     public static List<String> GetBannedStickers() {
+        String query = "SELECT packname FROM stickerbans";
+        ArrayList<String> banned = new ArrayList<>();
 
-        List<BannedStickerBean> bannedBeans = GetBannedStickerBeans();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
 
-        ArrayList<String> bannedPacks = new ArrayList<>();
-        for(BannedStickerBean bean : bannedBeans){
-            bannedPacks.add(bean.getPackId());
-        }
+            while(rs.next()){
+                banned.add(rs.getString(1));
+            }
 
-        return bannedPacks;
-    }
-
-    public static List<BannedStickerBean> GetBannedStickerBeans(){
-        List<BannedStickerBean> bannedPacks = new ArrayList<BannedStickerBean>();
-
-        try (BufferedReader br = Files.newBufferedReader(bannedStickersPath,
-                StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<BannedStickerBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(BannedStickerBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(BannedStickerBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            bannedPacks = csvToBean.parse();
-        } catch (IOException e){
+            st.close();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return bannedPacks;
+
+        return banned;
     }
 
-    public static boolean banStickers(List<String> packsToBan) {
-        boolean success = false;
-        try{
-            List<BannedStickerBean> currentlyBanned = GetBannedStickerBeans();
+    public static boolean CheckIfStickerBanned(String packName) {
+        String query = "SELECT packname FROM stickerbans WHERE packname = '" + packName + "'";
 
-            for(BannedStickerBean bannedPack : currentlyBanned){
-                if(packsToBan.contains(bannedPack.getPackId())){
-                    packsToBan.remove(bannedPack.getPackId());
-                }
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
+
+            if(rs.next()){
+                return true;
             }
 
-            for(String pack : packsToBan){
-                currentlyBanned.add(new BannedStickerBean(pack));
-                success = true;
-            }
-
-            Writer writer = new FileWriter(dataPath + bannedStickersFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-            beanToCsv.write(currentlyBanned);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            st.close();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return success;
+
+        return false;
     }
 
-    public static boolean banSticker(String packToBan) {
-        boolean success = false;
-        try{
-            List<BannedStickerBean> currentlyBanned = GetBannedStickerBeans();
+    // public static List<BannedStickerBean> GetBannedStickerBeans(){
+    // }
 
-            for(BannedStickerBean bean : currentlyBanned){
-                if (bean.getPackId().equals(packToBan)){
-                    return success;
-                }
-            }
+    // public static boolean banStickers(List<String> packsToBan) {
+    // }
 
-            currentlyBanned.add(new BannedStickerBean(packToBan));
-            success=true;
+    public static boolean banSticker(String packName) {
+        String query = "INSERT INTO stickerbans(packname) VALUES(?)";
 
-            Writer writer = new FileWriter(dataPath + bannedStickersFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-            beanToCsv.write(currentlyBanned);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setString(1, packName);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return success;
+        return false;
     }
 
-    public static boolean unbanSticker(String packToUnban) {
-        boolean success = false;
-        try{
-            List<String> currentlyBanned = GetBannedStickers();
+    public static boolean unbanSticker(String packName) {
+        String query = "DELETE FROM stickerbans WHERE packname = ?";
 
-            if(currentlyBanned.remove(packToUnban)){
-                success = true;
-            } else {
-                return false;
-            }
-
-            List<BannedStickerBean> bannedBeans = new ArrayList<BannedStickerBean>();
-            for(String pack : currentlyBanned){
-                bannedBeans.add(new BannedStickerBean(pack));
-            }
-
-            Writer writer = new FileWriter(dataPath + bannedStickersFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-            beanToCsv.write(bannedBeans);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setString(1, packName);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return success;
+        return false;
     }
 
-    ///////////////////////////////////////////
-    // Approved Admin List                   //
-    ///////////////////////////////////////////
-    public static List<Long> getAdmins(){
-        ArrayList<Long> admins = new ArrayList<>();
+    // ///////////////////////////////////////////
+    // // Approved Admin List                   //
+    // ///////////////////////////////////////////
+    public static Map<String, Integer> getAdmins(){
+        String query = "SELECT username, userid FROM users WHERE isadmin = 'true'";
+        Map<String, Integer> admins = new HashMap<String, Integer>();
 
-        try (BufferedReader br = Files.newBufferedReader(adminsPath,
-                StandardCharsets.UTF_8)) {
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
 
-            HeaderColumnNameMappingStrategy<AdminBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(AdminBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(AdminBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            List<AdminBean> adminBeans = csvToBean.parse();
-
-            for(AdminBean ad: adminBeans) {
-                admins.add(ad.getUserId());
+            while(rs.next()){
+                admins.put(rs.getString(1), rs.getInt(2));
             }
-        } catch (IOException e){
+
+            st.close();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return admins;
     }
 
-    public static boolean addAdmin(Long id) {
-        System.out.println("DBLoader:: addAdmin:: " + id);
-        List<AdminBean> adminBeans = new ArrayList<>();
-        List<Long> admins = new ArrayList<Long>();
-        boolean success = false;
+    public static boolean addAdmin(int id) {
+        String query = "UPDATE users SET isadmin = 'true' WHERE userid = ?";
 
-        try (BufferedReader br = Files.newBufferedReader(adminsPath, StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<AdminBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(AdminBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(AdminBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            adminBeans = csvToBean.parse();
-            for(AdminBean ad: adminBeans) {
-                admins.add(ad.getUserId());
-            }
-
-            if (admins.contains(id)){
-                // admin already in list, abort
-            } else {
-                adminBeans.add(new AdminBean(id));
-                success=true;
-
-                Writer writer = new FileWriter(dataPath + adminsFile);
-                StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-                
-                beanToCsv.write(adminBeans);
-                writer.close();
-            }
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
-            e.printStackTrace();
-        }
-        return success;
-    }
-
-    public static boolean removeAdmin(Long id) {
-        System.out.println("DBLoader:: removeAdmin:: " + id);
-        List<AdminBean> adminBeans = new ArrayList<>();
-        boolean success = false;
-        List<AdminBean> newAdmins = new ArrayList<>();
-
-        try (BufferedReader br = Files.newBufferedReader(adminsPath, StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<AdminBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(AdminBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(AdminBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            adminBeans = csvToBean.parse();
-            for(AdminBean ad: adminBeans) {
-                if(!ad.getUserId().equals(id)){
-                    newAdmins.add(ad);
-                } else {
-                    success=true;
-                }
-            }
-
-            Writer writer = new FileWriter(dataPath + adminsFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
             
-            beanToCsv.write(newAdmins);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            pst.setInt(1, id);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return success;
+        return false;
     }
 
-    ///////////////////////
-    // Module Enablement //
-    ///////////////////////
-    public static String enableModule(String moduleToEnable){
-        System.out.println("DBLoader:: enableModule:: " + moduleToEnable);
-        List<ModuleBean> moduleBeans = getModules();
-        List<ModuleBean> newModules = new ArrayList<>();
-        String response = "";
-        boolean foundModule = false;
-        
-        for(ModuleBean mod: moduleBeans) {
-            if(mod.getModule().equals(moduleToEnable)){
-                foundModule = true;
-                if(mod.getEnabled()){
-                    //already enabled, say as much
-                    response = "module " + moduleToEnable + " is already enabled";
-                } else {
-                    mod.setEnabled(true);
-                    response = "success";
-                }
-            }
-            newModules.add(mod);
-        }
+    public static boolean removeAdmin(int id) {
+        String query = "UPDATE users SET isadmin = 'false' WHERE userid = ?";
 
-        if(!foundModule){
-            //module was not found
-            response = "module " + moduleToEnable + " was not found. Please use /addModule if this is in error";
-        }
-
-        
-        try{
-            Writer writer = new FileWriter(dataPath + modulesFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-                
-            beanToCsv.write(newModules);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
-            e.printStackTrace();
-        }
-        
-        return response;
-    }
-
-    public static String disableModule(String moduleToDisable){
-        System.out.println("DBLoader:: disableModule:: " + moduleToDisable);
-        List<ModuleBean> moduleBeans = getModules();
-        List<ModuleBean> newModules = new ArrayList<>();
-        String response = "";
-        boolean foundModule = false;
-        
-        for(ModuleBean mod: moduleBeans) {
-            if(mod.getModule().equals(moduleToDisable)){
-                foundModule = true;
-                if(!mod.getEnabled()){
-                    //already enabled, say as much
-                    response = "module " + moduleToDisable + " is already disabled";
-                } else {
-                    mod.setEnabled(false);
-                    response = "module " + moduleToDisable + " has been disabled";
-                }
-            }
-            newModules.add(mod);
-        }
-
-        if(!foundModule){
-            //module was not found
-            response = "module " + moduleToDisable + " was not found. Please use /addModule if this is in error";
-        }
-
-        
-        try{
-            Writer writer = new FileWriter(dataPath + modulesFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-                
-            beanToCsv.write(newModules);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
-            e.printStackTrace();
-        }
-        
-        return response;
-    }
-
-    public static List<ModuleBean> getModules(){
-        System.out.println("DBLoader:: getModules:: ");
-        List<ModuleBean> modules = new ArrayList<>();
-
-        try (BufferedReader br = Files.newBufferedReader(modulesPath,
-                StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<ModuleBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(ModuleBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(ModuleBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            modules = csvToBean.parse();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        return modules;
-    }
-
-    public static boolean getModuleStatus(String moduleToCheck){
-        System.out.println("DBLoader:: getModuleStatus:: " + moduleToCheck);
-        //caveat: will return false if no module found
-        List<ModuleBean> modules = getModules();
-        boolean status = false;
-
-        for(ModuleBean mod : modules){
-            if(mod.getModule().equals(moduleToCheck)){
-                status = mod.getEnabled();
-            }
-        }
-
-        return status;
-    }
-
-    public static boolean addModule(String moduleToAdd){
-        //WARNING: should be in default config, not being present is an error
-        System.out.println("DBLoader:: addModule:: " + moduleToAdd);
-        List<ModuleBean> moduleBeans = new ArrayList<>();
-        List<String> modules = new ArrayList<>();
-        boolean success = false;
-
-        try (BufferedReader br = Files.newBufferedReader(modulesPath, StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<ModuleBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(ModuleBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(ModuleBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            moduleBeans = csvToBean.parse();
-            for(ModuleBean mod: moduleBeans) {
-                modules.add(mod.getModule());
-            }
-
-            if (modules.contains(moduleToAdd)){
-                // module already in list, abort
-            } else {
-                moduleBeans.add(new ModuleBean(moduleToAdd, false));
-                success=true;
-
-                Writer writer = new FileWriter(dataPath + modulesFile);
-                StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-                
-                beanToCsv.write(moduleBeans);
-                writer.close();
-            }
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
-            e.printStackTrace();
-        }
-        return success;
-    }
-
-    public static boolean removeModule(String moduleToRemove){
-        //WARNING: should be in default config, not being present is an error
-        System.out.println("DBLoader:: removeModule:: " + moduleToRemove);
-        List<ModuleBean> moduleBeans = new ArrayList<>();
-        boolean success = false;
-        List<ModuleBean> newModules = new ArrayList<>();
-
-        try (BufferedReader br = Files.newBufferedReader(modulesPath, StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<ModuleBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(ModuleBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(ModuleBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-                moduleBeans = csvToBean.parse();
-            for(ModuleBean mod: moduleBeans) {
-                if(!mod.getModule().equals(moduleToRemove)){
-                    newModules.add(mod);
-                } else {
-                    success=true;
-                }
-            }
-
-            Writer writer = new FileWriter(dataPath + modulesFile);
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
             
-            beanToCsv.write(newModules);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            pst.setInt(1, id);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return success;
+        return false;
     }
 
-    ///////////////////////////////////////////
-    // Timers                                //
-    ///////////////////////////////////////////
-    static int timerId = 0;
+    public static boolean checkIfAdmin(int id) {
+        String query = "SELECT isadmin FROM users WHERE userid = '" + id + "'";
 
-    public static List<TimerBean> getAllTimers() {
-        List<TimerBean> timerBeans = new ArrayList<>();
-        Path myPath = Paths.get(dataPath + "timers.csv");
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
 
-        // try {
-        //     CsvToBeanBuilder<TimerBean> beanBuilder = new CsvToBeanBuilder<>(new InputStreamReader(new FileInputStream(dataPath + "timers.csv")));
-        //     beanBuilder.withType(TimerBean.class);
-        //     timerBeans = beanBuilder.build().parse();
-        // } catch (FileNotFoundException e){
-        //     e.printStackTrace();
-        // }
+            boolean returnVal = rs.next();
 
-        try (BufferedReader br = Files.newBufferedReader(myPath,
-                StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<TimerBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(TimerBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(TimerBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            timerBeans = csvToBean.parse();
-        } catch (IOException e) {
+            st.close();
+            return returnVal;
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return timerBeans;
+        return false;
     }
 
-    public static List<TimerBean> getExpiredTimers() {
-        List<TimerBean> timerBeans = getAllTimers();
-        List<TimerBean> expiredBeans = new ArrayList<>();
+    // ///////////////////////
+    // // Module Enablement //
+    // ///////////////////////
+    public static boolean enableModule(String moduleName){
+        String query = "UPDATE modules SET enabled = 'true' WHERE modulename = ?";
 
-        for(TimerBean tim : timerBeans){
-            if(tim.getExpiry().isBefore(LocalDateTime.now())){
-                expiredBeans.add(tim);
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setString(1, moduleName);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean disableModule(String moduleName){
+        String query = "UPDATE modules SET enabled = 'false' WHERE modulename = ?";
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setString(1, moduleName);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static List<ModuleValue> getModules(){
+        String query = "SELECT module, enabled FROM modules";
+        List<ModuleValue> modvals = new ArrayList<ModuleValue>();
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
+
+            while(rs.next()){
+                ModuleValue mv = new ModuleValue(rs.getString(1), rs.getBoolean(2));
+                modvals.add(mv);
             }
+            st.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return expiredBeans;
+        return modvals;
+
+    }
+
+    public static boolean getModuleStatus(String moduleName){
+        String query = "SELECT enabled FROM modules WHERE module = '" + moduleName + "'";
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
+
+            if(rs.next()){
+                return rs.getBoolean(1);
+            }
+            st.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean addModule(String moduleName){
+        String query = "INSERT INTO modules(module) VALUES(?)";
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setString(1, moduleName);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean removeModule(String moduleName){
+        String query = "DELETE FROM modules WHERE module = ?";
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setString(1, moduleName);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ///////////////////////////////////////////
+    // // Timers                                //
+    // ///////////////////////////////////////////
+    // static int timerId = 0;
+
+    // public static List<TimerBean> getAllTimers() {
+    // }
+
+    public static ArrayList<TimerValue> getExpiredTimers() {
+        String query = "SELECT id, action, args FROM timers WHERE expiry <= ?";
+        ArrayList<TimerValue> expired = new ArrayList<>();
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setObject(1, java.sql.Timestamp.valueOf(LocalDateTime.now()));
+
+            ResultSet rs = pst.executeQuery();
+
+            while(rs.next()){
+                expired.add(new TimerValue(rs.getInt(1), rs.getString(2), rs.getString(3)));
+            }
+            pst.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return expired;
     }
 
     public static void addTimer(String action, String args, LocalDateTime time) {
-        List<TimerBean> timerBeans = getAllTimers();
+        String query = "INSERT INTO timers(action, args, expiry) VALUES(?, ?, ?)";
 
-        timerBeans.add(new TimerBean(
-            timerId++,
-            action,
-            args,
-            time
-        ));
-
-        try{
-            Writer writer = new FileWriter(dataPath + "timers.csv");
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
             
-            beanToCsv.write(timerBeans);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            pst.setString(1, action);
+            pst.setString(2, args);
+            pst.setObject(3, java.sql.Timestamp.valueOf(time));
+            pst.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public static boolean removeTimer(int id) {
-        List<TimerBean> timerBeans = getAllTimers();
-        List<TimerBean> newBeans = new ArrayList<>();
-        Path myPath = Paths.get(dataPath + "timers.csv");
-        boolean success=false;
+        String query = "DELETE FROM timers WHERE id = ?";
 
-        for(TimerBean tim : timerBeans){
-            if(tim.getTimerId() == id ){
-                success=true;
-            } else {
-                newBeans.add(tim);
-            }
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            
+            pst.setInt(1, id);
+            int response = pst.executeUpdate();
+            return (response != 0);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
-        if(success){
-            try{
-                Writer writer = new FileWriter(dataPath + "timers.csv");
-                StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-                
-                beanToCsv.write(newBeans);
-                writer.close();
-            } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return success;
+        return false;
     }
 
-    public static void updateTimerId() {
-        //get timers
-        List<TimerBean> timerBeans = getAllTimers();
-        //find largest timer val
-        int largestVal = 0;
-        for(TimerBean tim : timerBeans){
-            if(tim.getTimerId() > largestVal){
-                largestVal = tim.getTimerId();
-            }
-        }
-        //add 1
-        largestVal++;
-        //timerId = above
-        timerId = largestVal;
-    }
+    // public static void updateTimerId() {
+    // }
 
     
-    ///////////////////////////////////////////
-    // Statistics                            //
-    ///////////////////////////////////////////
-    public static void logEvent(String event, String sourceUser, String affectedUser, String notes) {
-        //Time, Event, SourceUser, AffectedUser, Notes
-        //TODO: refactor how we add new values to a file for optimisation
-        Path myPath = Paths.get(dataPath + "statistics.csv");
-        List<StatisticBean> statBeans = new ArrayList<>();
+    // ///////////////////////////////////////////
+    // // Statistics                            //
+    // ///////////////////////////////////////////
+    public static void logEvent(String event, int sourceUser, int affectedUser, String notes) {
+        String query = "INSERT INTO logging(event, sourceuser, affecteduser, notes) VALUES(?, ?, ?, ?)";
 
-        try (BufferedReader br = Files.newBufferedReader(myPath,
-                StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<StatisticBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(StatisticBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(TimerBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            statBeans = csvToBean.parse();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        StatisticBean newStat = new StatisticBean();
-        newStat.setTime(LocalDateTime.now());
-        newStat.setEvent(event);
-        newStat.setSourceUser(sourceUser);
-        newStat.setAffectedUser(affectedUser);
-        newStat.setNotes(notes);
-
-        statBeans.add(newStat);
-
-        try{
-            Writer writer = new FileWriter(dataPath + "statistics.csv");
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
             
-            beanToCsv.write(statBeans);
-            writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            pst.setString(1, event);
+            pst.setInt(2, sourceUser);
+            pst.setInt(3, affectedUser);
+            pst.setString(4, notes);
+
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // public static List<StatisticBean> getAllLogs() {
+    // }
+
+    public static List<LogValue> getLogs() { //by default returns last 5 events
+        String query = "SELECT * FROM logging ORDER BY id DESC LIMIT 5";
+        ArrayList<LogValue> logs = new ArrayList<LogValue>();
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
+
+            while(rs.next()){
+                LogValue lv = new LogValue(rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getObject(6, LocalDateTime.class));
+                logs.add(lv);
+            }
+
+            st.close();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
-    }
-
-    public static List<StatisticBean> getAllLogs() {
-        //by default returns last 5 events. 
-        Path myPath = Paths.get(dataPath + "statistics.csv");
-        List<StatisticBean> statBeans = new ArrayList<>();
-
-        try (BufferedReader br = Files.newBufferedReader(myPath,
-                StandardCharsets.UTF_8)) {
-
-            HeaderColumnNameMappingStrategy<StatisticBean> strategy
-                    = new HeaderColumnNameMappingStrategy<>();
-            strategy.setType(StatisticBean.class);
-
-            CsvToBean csvToBean = new CsvToBeanBuilder(br)
-                    .withType(TimerBean.class)
-                    .withMappingStrategy(strategy)
-                    .withIgnoreLeadingWhiteSpace(true)
-                    .build();
-
-            statBeans = csvToBean.parse();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return statBeans;
-    }
-
-    public static List<StatisticBean> getLogs() {
-        //by default returns last 5 events. 
-        List<StatisticBean> statBeans = getAllLogs();
-        List<StatisticBean> returnBeans = new ArrayList<>();
-
-        if(statBeans.size()-5 < 0){
-            returnBeans = statBeans.subList(0, statBeans.size());
-        } else {
-            returnBeans = statBeans.subList(statBeans.size()-5, statBeans.size());
-        }
-
-        return returnBeans;
+        return logs;
     }
 
     public static SendDocument getLogsFile() {
-        SendDocument doc = new SendDocument();
+        String query = "SELECT * FROM logging ORDER BY id DESC";
 
-        File statsFile = new File(dataPath + "statistics.csv");
-        InputFile inFile = new InputFile(statsFile);
-
-        doc.setDocument(inFile);
-        doc.setCaption(LocalDateTime.now().toString());
-
-        return doc;
-    }
-
-    public static SendDocument getLogsFileBySourceUser(String userId) {
-        //TODO: return a csv file containing logs regarding said user
-        List<StatisticBean> statBeans = getAllLogs();
-        List<StatisticBean> returnBeans = new ArrayList<>();
-
-        for(StatisticBean stat : statBeans){
-             if(stat.getSourceUser().equals(userId)){
-                 returnBeans.add(stat);
-             }
-        }
-
-        try{
-            Writer writer = new FileWriter(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
             
-            beanToCsv.write(returnBeans);
+            ResultSet rs = st.executeQuery(query);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp" + "/getLogsFile.csv"));
+
+            while(rs.next()){
+                writer.write(rs.getString(2) + "," + rs.getString(3) + "," + rs.getString(4) + "," + rs.getString(5) + "," + rs.getObject(6, LocalDateTime.class).toString());
+            }
+
             writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            st.close();
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
 
-        File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+        File statsFile = new File("/tmp" + "/getLogsFile.csv");
         SendDocument doc = new SendDocument();
         InputFile inFile = new InputFile(statsFile);
 
@@ -771,66 +494,105 @@ public class DBLoader {
         return doc;
     }
 
-    public static List<StatisticBean> getLogsByAffectedUser(String userId) {
-        List<StatisticBean> statBeans = getAllLogs();
-        List<StatisticBean> returnBeans = new ArrayList<>();
+    public static SendDocument getLogsFileBySourceUser(int userId) {
+        String query = "SELECT * FROM logging WHERE sourceuser = '" + userId + "' ORDER BY id DESC";
 
-        for(StatisticBean bean : statBeans){
-            if(bean.getAffectedUser() == userId){
-                returnBeans.add(bean);
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp" + "/getLogsFileBySourceUser"));
+
+            while(rs.next()){
+                writer.write(rs.getString(2) + "," + rs.getString(3) + "," + rs.getString(4) + "," + rs.getString(5) + "," + rs.getObject(6, LocalDateTime.class).toString());
             }
+
+            writer.close();
+            st.close();
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
         }
 
-        return returnBeans;
+        File statsFile = new File("/tmp" + "/getLogsFileBySourceUser.csv");
+        SendDocument doc = new SendDocument();
+        InputFile inFile = new InputFile(statsFile);
+
+        doc.setDocument(inFile);
+        doc.setCaption(LocalDateTime.now().toString());
+
+        return doc;
     }
 
-    public static List<StatisticBean> getLogsByAffectedUserAndEvents(String userId, String[] event) {
-        List<StatisticBean> statBeans = getAllLogs();
-        List<StatisticBean> returnBeans = new ArrayList<>();
+    public static List<LogValue> getLogsByAffectedUser(int userId) {
+        String query = "SELECT * FROM logging WHERE affecteduser = '" + userId + "' ORDER BY id DESC";
+        ArrayList<LogValue> logs = new ArrayList<LogValue>();
 
-        System.out.println("statbeans length: " + statBeans.size());
-        System.out.println("event length: " + event.length);
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
 
-        for(StatisticBean bean : statBeans){
-            System.out.println("gonna compare: " + bean.getAffectedUser() + " with " + userId);
-            if(bean.getAffectedUser().equals(userId)/* && Arrays.stream(event).anyMatch(bean.getEvent()::equals)*/){
-                System.out.println("found a bean for the userId");
-                for(int i = 0; i < event.length; i++){
-                    System.out.println("gonna compare: " + bean.getEvent() + " with " + event[i]);
-                    if(event[i].equals(bean.getEvent())){
-                        System.out.println("bean is eventy");
-                        returnBeans.add(bean);
-                    }
-                }
-                //returnBeans.add(bean);
+            while(rs.next()){
+                LogValue lv = new LogValue(rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getObject(6, LocalDateTime.class));
+                logs.add(lv);
             }
+
+            st.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-        return returnBeans;
+        return logs;
+    }
+
+    public static List<LogValue> getLogsByAffectedUserAndEvent(int userId, String event) {
+        String query = "SELECT * FROM logging WHERE affecteduser = '" + userId + "' AND event = '" + event + "' ORDER BY id DESC";
+        ArrayList<LogValue> logs = new ArrayList<LogValue>();
+
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery(query);
+
+            while(rs.next()){
+                LogValue lv = new LogValue(rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getObject(6, LocalDateTime.class));
+                logs.add(lv);
+            }
+
+            st.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return logs;
     }
 
     public static SendDocument getLogsFileByEvent(String event) {
-        //returns a csv file containing logs regarding said event
-        List<StatisticBean> statBeans = getAllLogs();
-        List<StatisticBean> returnBeans = new ArrayList<>();
+        String query = "SELECT * FROM logging WHERE event = '" + event + "' ORDER BY id DESC";
 
-        for(StatisticBean stat : statBeans){
-             if(stat.getEvent().equals(event)){
-                 returnBeans.add(stat);
-             }
-        }
-
-        try{
-            Writer writer = new FileWriter(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            Statement st = con.createStatement();
             
-            beanToCsv.write(returnBeans);
+            ResultSet rs = st.executeQuery(query);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp" + "/getLogsFileByEvent.csv"));
+
+            while(rs.next()){
+                writer.write(rs.getString(2) + "," + rs.getString(3) + "," + rs.getString(4) + "," + rs.getString(5) + "," + rs.getObject(6, LocalDateTime.class).toString());
+            }
+
             writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            st.close();
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
 
-        File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+        File statsFile = new File("/tmp" + "/getLogsFileByEvent.csv");
         SendDocument doc = new SendDocument();
         InputFile inFile = new InputFile(statsFile);
 
@@ -841,27 +603,29 @@ public class DBLoader {
     }
 
     public static SendDocument getLogsFileInDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        //returns a csv file containing logs within this date range
-        List<StatisticBean> statBeans = getAllLogs();
-        List<StatisticBean> returnBeans = new ArrayList<>();
+        String query = "SELECT * FROM logging WHERE date >= ? AND date < ?";
+        ArrayList<LogValue> logs = new ArrayList<>();
 
-        for(StatisticBean stat : statBeans){
-             if(stat.getTime().isBefore(endDate) && stat.getTime().isAfter(startDate)){
-                 returnBeans.add(stat);
-             }
-        }
-
-        try{
-            Writer writer = new FileWriter(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
-            StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setObject(1, java.sql.Timestamp.valueOf(startDate));
+            pst.setObject(2, java.sql.Timestamp.valueOf(endDate));
             
-            beanToCsv.write(returnBeans);
+            ResultSet rs = pst.executeQuery(query);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp" + "/getLogsFileInDateRange.csv"));
+
+            while(rs.next()){
+                writer.write(rs.getString(2) + "," + rs.getString(3) + "," + rs.getString(4) + "," + rs.getString(5) + "," + rs.getObject(6, LocalDateTime.class).toString());
+            }
+            rs.close();
             writer.close();
-        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
 
-        File statsFile = new File(dataPath + "/temp" + "TEMP-filteredStatistics.csv");
+        File statsFile = new File("/tmp" + "/getLogsFileInDateRange.csv");
         SendDocument doc = new SendDocument();
         InputFile inFile = new InputFile(statsFile);
 
@@ -871,18 +635,30 @@ public class DBLoader {
         return doc;
     }
     
-    public static List<StatisticBean> getLogsInDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        //returns a beans within this date range
-        List<StatisticBean> statBeans = getAllLogs();
-        List<StatisticBean> returnBeans = new ArrayList<>();
+    public static List<LogValue> getLogsInDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        String query = "SELECT * FROM logging WHERE date >= ? AND date < ?";
+        ArrayList<LogValue> logs = new ArrayList<>();
 
-        for(StatisticBean stat : statBeans){
-             if(stat.getTime().isBefore(endDate) && stat.getTime().isAfter(startDate)){
-                 returnBeans.add(stat);
-             }
+        try {
+            Connection con = DriverManager.getConnection(url, user, null);
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setObject(1, LocalDateTime.now());
+            pst.setObject(1, java.sql.Timestamp.valueOf(startDate));
+            pst.setObject(2, java.sql.Timestamp.valueOf(endDate));
+            
+            ResultSet rs = pst.executeQuery(query);
+
+            while(rs.next()){
+                LogValue lv = new LogValue(rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getObject(6, LocalDateTime.class));
+                logs.add(lv);
+            }
+
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-        return returnBeans;
+        return logs;
     }
     
 }

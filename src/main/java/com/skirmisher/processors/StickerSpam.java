@@ -87,7 +87,7 @@ public class StickerSpam {
             message.setText("Please be considerate of other users and avoid spamming the chat with stickers");
             bot.send(message);
             
-            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());
+            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId(), 0, "Spammer: " + update.getMessage().getFrom().getUserName());
         }
     }
 }

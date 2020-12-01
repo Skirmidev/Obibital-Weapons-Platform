@@ -134,7 +134,7 @@ public class CallbackManager {
                             
                             editM.setText(response);
                             bot.execute(editM);
-                            DBLoader.logEvent("BAN", update.getCallbackQuery().getFrom().getId().toString(), userid, "New join");
+                            DBLoader.logEvent("BAN", update.getCallbackQuery().getFrom().getId(), Integer.parseInt(userid), "New join");
                         } catch (TelegramApiException e){
                             System.out.println(e.toString());
                             e.printStackTrace();
@@ -148,7 +148,7 @@ public class CallbackManager {
                             editM.setText(response);
                         
                             bot.execute(editM);
-                            DBLoader.logEvent("MARK SAFE", update.getCallbackQuery().getFrom().getId().toString(), userid, "New Join");
+                            DBLoader.logEvent("MARK SAFE", update.getCallbackQuery().getFrom().getId(), Integer.parseInt(userid), "New Join");
                         } catch (TelegramApiException e){
                             System.out.println(e.toString());
                             e.printStackTrace();

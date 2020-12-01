@@ -43,7 +43,7 @@ public class ImageSpam {
             message.setText("Please be considerate of other users and avoid spamming the chat with images");
             bot.send(message);
             
-            DBLoader.logEvent("IMAGESPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());
+            DBLoader.logEvent("IMAGESPAM", update.getMessage().getFrom().getId(), 0, "Spammer: " + update.getMessage().getFrom().getUserName());
         }
     }
 }

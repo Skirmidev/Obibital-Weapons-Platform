@@ -34,45 +34,27 @@ public class SpamManager {
 
 
 
-
-
-
-
-
-        }
-
-
-        if((update.getMessage().hasVideo() || update.getMessage().hasPhoto() || update.getMessage().hasAnimation() || update.getMessage().hasSticker() ) && !context.isBlockingResult()){ //treats videos and images the same. would be nice to include gifs, not sure how. should ignore non-compress images?
-            mediaCount++;
-            
-            if(mediaCount > 5){
-                spamDetected(context, update, bot);
-
-            }
-
-        } else {
-            mediaCount = 0;
         }
         return context;
     }
 
     private static void spamDetected(Context context, Update update, ObibitalWeaponsPlatform bot){
-        DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId(), update.getMessage().getMessageId());
-        try{
-            bot.execute(delete);
-            context.setResult("MediaSpam:: Media Spam - Deleted");
-            context.setBlockingResult(true);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        // DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId(), update.getMessage().getMessageId());
+        // try{
+        //     bot.execute(delete);
+        //     context.setResult("MediaSpam:: Media Spam - Deleted");
+        //     context.setBlockingResult(true);
+        // } catch (TelegramApiException e) {
+        //     e.printStackTrace();
+        // }
 
-        if(mediaCount == 4){
-            SendMessage message = new SendMessage()
-            .setChatId(update.getMessage().getChatId())
-            .setText("Please be considerate of other users and avoid spamming the chat with images, videos, gifs or stickers");
-            bot.send(message);
+        // if(mediaCount == 4){
+        //     SendMessage message = new SendMessage()
+        //     .setChatId(update.getMessage().getChatId())
+        //     .setText("Please be considerate of other users and avoid spamming the chat with images, videos, gifs or stickers");
+        //     bot.send(message);
             
-            DBLoader.logEvent("MEDIASPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());
-        }
+        //     DBLoader.logEvent("MEDIASPAM", update.getMessage().getFrom().getId().toString(), "", "Spammer: " + update.getMessage().getFrom().getUserName());
+        // }
     }
 }

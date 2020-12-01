@@ -9,8 +9,8 @@ import com.skirmisher.processors.StickerPackBanner;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import com.skirmisher.data.DBLoader;
-import com.skirmisher.data.beans.ModuleBean;
-import com.skirmisher.data.beans.StatisticBean;
+import com.skirmisher.data.beans.ModuleValue;
+import com.skirmisher.data.beans.LogValue;
 import com.skirmisher.obibital.Context;
 import com.skirmisher.obibital.ModuleControl;
 
@@ -23,6 +23,7 @@ import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.objects.Chat;
+import java.util.Map;
 
 public class AdminCommands {
     static char prefix = '/';
@@ -125,7 +126,7 @@ public class AdminCommands {
                     case "/modulestatus":
                         if(activeCommands.contains("modulestatus")){
                             moduleStatus(update, bot, args);
-                            context.setResult("AdminCommands: getModules command");
+                            context.setResult("AdminCommands: moduleStatus command");
                             context.setBlockingResult(true);
                         } else {
                             commandNotEnabled(update, bot);
@@ -356,11 +357,11 @@ public class AdminCommands {
             m_userName = p_userName.matcher(args[1]);
             if (m_userId.find() ) {
                 // add the admin by this userid
-                if(DBLoader.addAdmin(Long.parseLong(args[1]))){
+                if(DBLoader.addAdmin(Integer.parseInt(args[1]))){
                     bot.reloadConfig();
                     message.setText(args[1] + " added to admin list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("ADD_ADMIN", update.getMessage().getFrom().getId().toString(), args[1], "");
+                    DBLoader.logEvent("ADD_ADMIN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), "");
                 } else {
                     message.setText(args[1] + " is already in the admin list");
                 }
@@ -402,11 +403,11 @@ public class AdminCommands {
             m_userName = p_userName.matcher(args[1]);
             if (m_userId.find() ) {
                 // add the admin by this userid
-                if (DBLoader.removeAdmin(Long.parseLong(args[1]))){
+                if (DBLoader.removeAdmin(Integer.parseInt(args[1]))){
                     bot.reloadConfig();
                     message.setText(args[1] + " removed from admin list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("REMOVE_ADMIN", update.getMessage().getFrom().getId().toString(), args[1], "");
+                    DBLoader.logEvent("REMOVE_ADMIN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), "");
                 } else {
                     message.setText(args[1] + " is not in the admin list");
                 }
@@ -442,10 +443,10 @@ public class AdminCommands {
         SendMessage message = new SendMessage();
         message.setChatId(update.getMessage().getChatId().toString());
         String response = "Current Admin List:" + "\n";
-        List<Long> admins = DBLoader.getAdmins();
+        Map<String, Integer> admins = DBLoader.getAdmins();
 
-        for(Long admin : admins){
-            response = response + admin.toString() + "\n";
+        for(Map.Entry<String, Integer> admin : admins.entrySet()){
+            response = response + admin.getKey() + "\n";
         }
 
         message.setText(response);
@@ -464,16 +465,16 @@ public class AdminCommands {
             m_module = p_module.matcher(args[1]);
             if (m_module.find() ) {
                 // enable the module by this name
-                String result = DBLoader.enableModule(args[1]);
-                if(result.equals("success")){
+                boolean result = DBLoader.enableModule(args[1]);
+                if(result){
                     message.setText(args[1] + " has been enabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("ENABLE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
+                    DBLoader.logEvent("ENABLE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
 
                     ModuleControl.reloadModules();
                 } else {
                     message.setChatId(update.getMessage().getChatId().toString());
-                    message.setText(result);
+                    message.setText("Failed to enable module");
                 }
                 bot.send(message);
             } else {
@@ -504,16 +505,16 @@ public class AdminCommands {
             m_module = p_module.matcher(args[1]);
             if (m_module.find() ) {
                 //disable the module by this name
-                String result = DBLoader.disableModule(args[1]);
-                if(result.equals("success")){
+                boolean result = DBLoader.disableModule(args[1]);
+                if(result){
                     message.setText(args[1] + " has been disabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("DISABLE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
+                    DBLoader.logEvent("DISABLE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
 
                     ModuleControl.reloadModules();
                 } else {
                     message.setChatId(update.getMessage().getChatId().toString());
-                    message.setText(result);
+                    message.setText("Failed to disable module");
                 }
                 bot.send(message);
             } else {
@@ -539,11 +540,11 @@ public class AdminCommands {
         SendMessage message = new SendMessage();
         message.setChatId(update.getMessage().getChatId().toString());
 
-        List<ModuleBean> modules = DBLoader.getModules();
+        List<ModuleValue> modules = DBLoader.getModules();
         
         String response = "The following modules are loaded: \n";
 
-        for(ModuleBean mod : modules){
+        for(ModuleValue mod : modules){
             response = response + mod.getModule() + " - " + mod.getEnabled() + "\n";
         }
 
@@ -605,7 +606,7 @@ public class AdminCommands {
                     ModuleControl.reloadModules();
                     message.setText(args[1] + " added to the module list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("ADD_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
+                    DBLoader.logEvent("ADD_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
                 } else {
                     message.setText(args[1] + " already present in the modules list");
                 }
@@ -647,7 +648,7 @@ public class AdminCommands {
                     ModuleControl.reloadModules();
                     message.setText(args[1] + " removed from the module list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("REMOVE_MODULE", update.getMessage().getFrom().getId().toString(), "", args[1]);
+                    DBLoader.logEvent("REMOVE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
                 } else {
                     message.setText(args[1] + " not present in the modules list");
                 }
@@ -685,7 +686,7 @@ public class AdminCommands {
                     StickerPackBanner.reloadBannedPacks();
                     message.setText(args[1] + " added to the banned stickers list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("BAN_STICKERPACK", update.getMessage().getFrom().getId().toString(), "", args[1]);
+                    DBLoader.logEvent("BAN_STICKERPACK", update.getMessage().getFrom().getId(), 0, args[1]);
                 } else {
                     message.setText(args[1] + " already present in the banned stickers list");
                 }
@@ -723,7 +724,7 @@ public class AdminCommands {
                     StickerPackBanner.reloadBannedPacks();
                     message.setText(args[1] + " removed from the banned stickers list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("UNBAN_STICKERPACK", update.getMessage().getFrom().getId().toString(), "", args[1]);
+                    DBLoader.logEvent("UNBAN_STICKERPACK", update.getMessage().getFrom().getId(), 0, args[1]);
                 } else {
                     message.setText(args[1] + " not present in the banned stickers list");
                 }
@@ -801,7 +802,7 @@ public class AdminCommands {
 
         DBLoader.addTimer("UNBAN", args[1], expiryTime);
 
-        DBLoader.logEvent("CREATE_MANUAL_TIMER", update.getMessage().getFrom().getId().toString(), args[1], "UNBAN - " + expiryTime.toString());
+        DBLoader.logEvent("CREATE_MANUAL_TIMER", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), "UNBAN - " + expiryTime.toString());
     }
 
     ////////////////////////////////////////////////////////
@@ -810,10 +811,10 @@ public class AdminCommands {
     public static void getLogs(Update update, ObibitalWeaponsPlatform bot){
         SendMessage message = new SendMessage();
         message.setChatId(update.getMessage().getChatId().toString());
-        List<StatisticBean> logs = DBLoader.getLogs();
+        List<LogValue> logs = DBLoader.getLogs();
         String text = "Last " + logs.size() + " log entries: \n";
 
-        for(StatisticBean log : logs){
+        for(LogValue log : logs){
             text = text + log + "\n";
         }
         message.setText(text);
@@ -895,10 +896,10 @@ public class AdminCommands {
 
                 if(success){
                     // add a ban and perform the ban
-                    DBLoader.logEvent("BAN", update.getMessage().getFrom().getId().toString(), args[1], reason + "- " + "automatic unban on " + expiryTime);
+                    DBLoader.logEvent("BAN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), reason + "- " + "automatic unban on " + expiryTime);
 
-                    List<StatisticBean> warnLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"WARN"});
-                    List<StatisticBean> banLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"BAN"});
+                    List<LogValue> warnLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "WARN");
+                    List<LogValue> banLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "BAN");
                     
                     message.setText("Banned succesfully for " + reason + " until " + expiryTime.toString() + ". User " + args[1] + " has " + warnLogs.size() + " warnings and " + banLogs.size() + " manual bans on record.");
                     bot.send(message);
@@ -951,10 +952,10 @@ public class AdminCommands {
                 }
 
                 // add a warning 
-                DBLoader.logEvent("WARN", update.getMessage().getFrom().getId().toString(), args[1], reason);
+                DBLoader.logEvent("WARN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), reason);
 
-                List<StatisticBean> warnLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"WARN"});
-                List<StatisticBean> banLogs = DBLoader.getLogsByAffectedUserAndEvents(args[1], new String[]{"BAN"});
+                List<LogValue> warnLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "WARN");
+                List<LogValue> banLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "BAN");
                 
                 message.setText("Warning succesfully added for " + reason + ". User " + args[1] + " has " + warnLogs.size() + " warnings and " + banLogs.size() + " manual bans on record.");
                 bot.send(message);
@@ -1001,7 +1002,7 @@ public class AdminCommands {
     // /weekReport //
     /////////////////
     public static void weekReport(Update update, ObibitalWeaponsPlatform bot){
-        List<StatisticBean> logs = DBLoader.getLogsInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
+        List<LogValue> logs = DBLoader.getLogsInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
 
         int warn = 0;
         int ban = 0;
@@ -1009,7 +1010,7 @@ public class AdminCommands {
         int night_join = 0;
         int stickerspam = 0;
 
-        for(StatisticBean bean : logs){
+        for(LogValue bean : logs){
             switch(bean.getEvent()){
                 case "WARN":
                     warn++;
@@ -1049,7 +1050,7 @@ public class AdminCommands {
     /////////////////////////////
     public static void getLogsByUser(Update update, ObibitalWeaponsPlatform bot, String[] args){
         if(args.length > 1){
-            SendDocument doc = DBLoader.getLogsFileBySourceUser(args[1]);
+            SendDocument doc = DBLoader.getLogsFileBySourceUser(Integer.parseInt(args[1]));
             doc.setChatId(update.getMessage().getChatId().toString());
             doc.setReplyToMessageId(update.getMessage().getMessageId());
 

@@ -44,7 +44,7 @@ public class NewJoinManagement {
 
             for(User user : update.getMessage().getNewChatMembers()){
                 managePerms.setUserId(user.getId());
-                DBLoader.logEvent("NEWJOINRESTRICT", user.getId().toString(), "", "");
+                DBLoader.logEvent("NEWJOINRESTRICT", user.getId(), 0, "");
                 System.out.println("NewJoinRestrictions:: Restricted new user: " + user.getUserName() + " - " + user.getId());
                 context.setResult("NewJoinRestrictions:: A new member has joined and been restricted");
                 context.setBlockingResult(true);

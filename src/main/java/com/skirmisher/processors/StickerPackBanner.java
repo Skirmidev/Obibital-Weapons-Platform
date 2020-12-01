@@ -47,7 +47,7 @@ public class StickerPackBanner {
         } else {
             DBLoader.banSticker(packId);
             
-            DBLoader.logEvent("BAN_STICKERPACK", "", "", packId);
+            DBLoader.logEvent("BAN_STICKERPACK", 0, 0, packId);
 
             System.out.println("StickerPackBanner:: Pack" + packId + " has been banned");
             reloadBannedPacks();

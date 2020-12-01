@@ -9,7 +9,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.ChatPermissions;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.RestrictChatMember;
 import java.time.LocalDateTime;
-import com.skirmisher.data.beans.StatisticBean;
+import com.skirmisher.data.beans.LogValue;
+import com.skirmisher.data.beans.TimerValue;
+import java.util.ArrayList;
 
 public class TimerPoller implements Runnable{
     ObibitalWeaponsPlatform bot;    
@@ -21,11 +23,11 @@ public class TimerPoller implements Runnable{
     public void run(){
         try{
             //check for expired timers
-            List<TimerBean> expiredTimers = DBLoader.getExpiredTimers();
+            ArrayList<TimerValue> expiredTimers = DBLoader.getExpiredTimers();
             System.out.println(LocalDateTime.now().toString() + "Timer Poller:: Found " + expiredTimers.size() + " expired timers");
 
             //for each expired timer, see what we're meant to do with it
-            for(TimerBean tim : expiredTimers){
+            for(TimerValue tim : expiredTimers){
                 String splitArgs[] = tim.getArgs().split(" ");
                 switch( tim.getAction() ){
                     case "UNBAN":
@@ -50,7 +52,7 @@ public class TimerPoller implements Runnable{
                         break;
                 }
 
-                DBLoader.removeTimer(tim.getTimerId());
+                DBLoader.removeTimer(tim.getId());
             }
         } catch (RuntimeException e) {
             //catch necessary for poller to continue
@@ -87,7 +89,7 @@ public class TimerPoller implements Runnable{
             modMessage.setText("User: " + args[0] + " has been unbanned from " + "CHAT NAME and has been informed as such"); //TODO: make this generic, get username from id
             bot.send(modMessage);
 
-            DBLoader.logEvent("UNBAN", "TIMED_EVENT", args[0], "");
+            DBLoader.logEvent("UNBAN", 0, Integer.parseInt(args[0]), "");
         } else {
             //send message to modchat, user unban attempted but failed
             SendMessage modMessage = new SendMessage();
@@ -128,7 +130,7 @@ public class TimerPoller implements Runnable{
     // WEEKLYREPORT //
     //////////////////
     public void weeklyReport(){
-        List<StatisticBean> logs = DBLoader.getLogsInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
+        List<LogValue> logs = DBLoader.getLogsInDateRange(LocalDateTime.now().minusWeeks(1l), LocalDateTime.now());
 
         int warn = 0;
         int ban = 0;
@@ -136,7 +138,7 @@ public class TimerPoller implements Runnable{
         int night_join = 0;
         int stickerspam = 0;
 
-        for(StatisticBean bean : logs){
+        for(LogValue bean : logs){
             switch(bean.getEvent()){
                 case "WARN":
                     warn++;

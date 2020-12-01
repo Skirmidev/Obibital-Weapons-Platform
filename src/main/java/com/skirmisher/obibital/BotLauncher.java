@@ -23,9 +23,6 @@ public class BotLauncher {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
 
             ObibitalWeaponsPlatform bot = new ObibitalWeaponsPlatform();
-            
-            System.out.println("Bot options: " + bot.getOptions().getAllowedUpdates());
-            //bot.getOptions().setAllowedUpdates(allowedUpdates);
 
             StickerPackBanner.reloadBannedPacks();
 
@@ -34,8 +31,6 @@ public class BotLauncher {
             bot.reloadConfig();
 
             botsApi.registerBot(bot);
-
-            DBLoader.updateTimerId();
 
             //set poller to run every minute
             final Runnable poller = new TimerPoller(bot);

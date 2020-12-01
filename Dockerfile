@@ -15,7 +15,8 @@ COPY target/telegram-modbot.jar /telegram-modbot.jar
 
 COPY docker-entrypoint.sh /
 
-COPY configValues.csv /
+COPY /src/main/data/configValues.csv /
+COPY /src/main/data/moduleValues.csv /
 
 #fix line endings windows -> linux
 RUN sed -i 's/\r$//' configValues.csv
