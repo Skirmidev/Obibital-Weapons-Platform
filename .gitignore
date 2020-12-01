@@ -17,3 +17,5 @@ src/main/data/*.csv
 *.iml
 .factorypath
 /dockerdata
+/developmentNotes
+/extrafiles
