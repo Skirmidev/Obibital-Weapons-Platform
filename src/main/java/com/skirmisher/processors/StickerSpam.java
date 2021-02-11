@@ -5,32 +5,37 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import com.skirmisher.obibital.ObibitalWeaponsPlatform;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import com.skirmisher.obibital.Context;
 import com.skirmisher.data.DBLoader;
 
 public class StickerSpam {
     static int stickerCount = 0;
+    static Boolean hasSentMessage = false;
     static ArrayList<Update> lastStickers = new ArrayList<>();
+    static LinkedList<Update> last6Messages = new LinkedList<>();
 
     public static Context spamCheck(Context context, Update update, ObibitalWeaponsPlatform bot){
         System.out.println("StickerSpam:: spamCheck");
-        if(update.getMessage().hasSticker() && !context.isBlockingResult()){
-            stickerCount++;
-            lastStickers.add(update);
-            
-            if(stickerCount > 2){
-                checkIfPackSpam(context, update, bot);
-            
-                if(stickerCount > 3){
-                    spamDetected(context, update, bot);
+        if(!context.isBlockingResult()){
+
+            if(last6Messages.size() == 6){
+                last6Messages.remove();
+            }
+            last6Messages.add(update);
+
+            stickerCount = 0;
+            for(Update u: last6Messages){
+                if(u.getMessage().hasSticker()){
+                    stickerCount++;
                 }
             }
 
-            //handle the same sticker sent multiple times
-
-        } else {
-            stickerCount = 0;
-            lastStickers = new ArrayList<>();
+            if(stickerCount > 3 && update.getMessage().hasSticker()){
+                spamDetected(context, update, bot);
+            } else if (stickerCount < 3){
+                hasSentMessage = false;
+            }
         }
         return context;
     }
@@ -81,13 +86,17 @@ public class StickerSpam {
             e.printStackTrace();
         }
 
-        if(stickerCount == 4){
+        if(stickerCount == 4 && !hasSentMessage){
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId().toString());
             message.setText("Please be considerate of other users and avoid spamming the chat with stickers");
+            hasSentMessage = true;
             bot.send(message);
             
-            DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId(), 0, "Spammer: " + update.getMessage().getFrom().getUserName());
+            //DBLoader.logEvent("STICKERSPAM", update.getMessage().getFrom().getId(), 0, "Spammer: " + update.getMessage().getFrom().getUserName());
+            //TODO: reimplement when user db is working
         }
+
+        last6Messages.remove(update);
     }
 }
