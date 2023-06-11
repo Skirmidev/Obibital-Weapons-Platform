@@ -49,7 +49,9 @@
             <!--packages the built files into an uberjar-->
             <id>package</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!skipPackage</name>
+                </property>
             </activation>
             <build>
                 <plugins>
@@ -95,7 +97,9 @@
             <!--builds and pushes an image to local docker repo-->
             <id>build-docker</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!skipBuild-Docker</name>
+                </property>
             </activation>
             <build>
                 <plugins>
@@ -127,10 +131,127 @@
             </build>
         </profile>
 
+        <profile>
+            <id>refresh-config</id>
+            <activation>
+                <property>
+                    <name>!skipRefresh-Config</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.8</version>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath" />
+                                        <if>
+                                            <available file="${project.basedir}/dockerdata/"/>
+                                            <then>
+                                            </then>
+                                            <else>
+                                                <copy todir="${project.basedir}/dockerdata/">
+                                                    <fileset dir="${project.basedir}/src/main/data/" />
+                                                </copy>
+                                            </else>
+                                        </if>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>ant-contrib</groupId>
+                                <artifactId>ant-contrib</artifactId>
+                                <version>1.0b3</version>
+                                <exclusions>
+                                    <exclusion>
+                                        <groupId>ant</groupId>
+                                        <artifactId>ant</artifactId>
+                                    </exclusion>
+                                </exclusions>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.ant</groupId>
+                                <artifactId>ant-nodeps</artifactId>
+                                <version>1.8.1</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!--removes existing docker container and deploys latest image-->
+            <id>docker-teardown</id>
+            <activation>
+                <property>
+                    <name>!skipRedeploy</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>stop existing container</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory> 
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>stop</argument>
+                                        <argument>obibital-platform</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>      
+                            <execution>
+                                <id>remove existing container</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>rm</argument>
+                                        <argument>obibital-platform</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>                       
+                        </executions>
+                    </plugin>  
+                </plugins>
+            </build>
+        </profile>
         
         <profile>
-            <!--removes existing database volumes and creates fresh copies-->
-            <id>reload-db</id>
+            <!--removes existing database volumes-->
+            <id>db-teardown</id>
             <build>
                 <plugins>
                     <plugin>
@@ -178,7 +299,22 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
+        <profile>
+            <!--creates database volumes-->
+            <id>db-startup</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
                             <execution>
                                 <id>create dbconfig volume</id>
                                 <phase>install</phase>
@@ -224,11 +360,14 @@
         </profile>
 
         
+
         <profile>
             <!--removes existing docker container and deploys latest image-->
-            <id>deploy</id>
+            <id>docker-startup</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!skipDeploy</name>
+                </property>
             </activation>
             <build>
                 <plugins>
@@ -237,44 +376,6 @@
                         <artifactId>exec-maven-plugin</artifactId>
                         <version>1.2.1</version>
                         <executions>
-                            <execution>
-                                <id>stop existing container</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <successCodes>
-                                        <successCode>0</successCode>
-                                        <successCode>1</successCode>
-                                    </successCodes>
-                                    <workingDirectory>${project.basedir}</workingDirectory> 
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>stop</argument>
-                                        <argument>obibital-platform</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>      
-                            <execution>
-                                <id>remove existing container</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <successCodes>
-                                        <successCode>0</successCode>
-                                        <successCode>1</successCode>
-                                    </successCodes>
-                                    <workingDirectory>${project.basedir}</workingDirectory>
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>rm</argument>
-                                        <argument>obibital-platform</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>   
                             <execution>
                                 <id>create new container</id>
                                 <phase>install</phase>
@@ -306,54 +407,4 @@
             </build>
         </profile>
     </profiles>
-
-            <!--unclear if I need below-->
-
-            <!-- copy the data files to where they are needed (if not already present). by default should not overwrite -->
-            <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath" />
-                                <if>
-                                    <available file="${project.basedir}/dockerdata/"/>
-                                    <then>
-                                    </then>
-                                    <else>
-                                        <copy todir="${project.basedir}/dockerdata/">
-                                            <fileset dir="${project.basedir}/src/main/data/" />
-                                        </copy>
-                                    </else>
-                                </if>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>ant-contrib</groupId>
-                        <artifactId>ant-contrib</artifactId>
-                        <version>1.0b3</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>ant</groupId>
-                                <artifactId>ant</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.ant</groupId>
-                        <artifactId>ant-nodeps</artifactId>
-                        <version>1.8.1</version>
-                    </dependency>
-                </dependencies>
-            </plugin> -->
 </project>

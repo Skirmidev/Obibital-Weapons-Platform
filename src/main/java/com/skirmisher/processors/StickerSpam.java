@@ -29,6 +29,10 @@ public class StickerSpam {
                 if(u.getMessage().hasSticker()){
                     stickerCount++;
                 }
+                //reset count to 0 when a new member joins
+                if(update.getMessage().getNewChatMembers().size() > 0){
+                    stickerCount=0;
+                }
             }
 
             if(stickerCount > 3 && update.getMessage().hasSticker()){

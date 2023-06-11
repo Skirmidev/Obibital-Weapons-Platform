@@ -36,9 +36,6 @@ psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS config ( element V
 # CREATE TABLE: TIMERS
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS timers ( id serial PRIMARY KEY UNIQUE NOT NULL, action VARCHAR ( 20 ) NOT NULL, args VARCHAR(100), expiry TIMESTAMP default current_timestamp);"
 
-# CREATE TABLE: LOGGING
-psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS logging ( id serial PRIMARY KEY UNIQUE NOT NULL, event VARCHAR ( 50 ), sourceuser bigint REFERENCES users (userid), affecteduser bigint REFERENCES users( userid ), notes VARCHAR ( 100 ), date TIMESTAMP default current_timestamp);"
-
 # CREATE TABLE: MODULES
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS modules ( module VARCHAR (50) PRIMARY KEY UNIQUE NOT NULL, enabled BOOLEAN NOT NULL DEFAULT false);"
 
