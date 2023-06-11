@@ -44,41 +44,270 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
+    <profiles>
+        <profile>
+            <!--packages the built files into an uberjar-->
+            <id>package</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>2.1</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <outputFile>target\telegram-modbot.jar</outputFile>
+                                    <overwrite>false</overwrite>
+                                    <transformers>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                            <mainClass>com.skirmisher.obibital.BotLauncher</mainClass>
+                                        </transformer>
+                                    </transformers>
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        
+        <profile>
+            <!--builds and pushes an image to local docker repo-->
+            <id>build-docker</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <version>${dockerfile-maven-version}</version>
+                        <executions>
+                            <execution>
+                            <id>build and push docker image</id>
+                            <goals>
+                                <goal>build</goal>
+                                <goal>push</goal>
+                            </goals>
+                            </execution>
+                        </executions>
                         <configuration>
-                            <outputFile>target\telegram-modbot.jar</outputFile>
-                            <overwrite>false</overwrite>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.skirmisher.obibital.BotLauncher</mainClass>
-                                </transformer>
-                            </transformers>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
+                            <repository>${project.artifactId}</repository>
+                            <buildArgs>
+                                <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                            </buildArgs>
+                            <imageTags>
+                                <imageTag>${project.version}</imageTag>
+                                <imageTag>latest</imageTag>
+                            </imageTags>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        
+        <profile>
+            <!--removes existing database volumes and creates fresh copies-->
+            <id>reload-db</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>remove dbconfig volume</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>volume</argument>
+                                        <argument>rm</argument>
+                                        <argument>obibital-db-config</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>    
+                            <execution>
+                                <id>remove tablespace volume</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>volume</argument>
+                                        <argument>rm</argument>
+                                        <argument>obibital-db-tablespace</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>create dbconfig volume</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>volume</argument>
+                                        <argument>create</argument>
+                                        <argument>obibital-db-config</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>    
+                            <execution>
+                                <id>create tablespace volume</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>volume</argument>
+                                        <argument>create</argument>
+                                        <argument>obibital-db-tablespace</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>   
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        
+        <profile>
+            <!--removes existing docker container and deploys latest image-->
+            <id>deploy</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>stop existing container</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory> 
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>stop</argument>
+                                        <argument>obibital-platform</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>      
+                            <execution>
+                                <id>remove existing container</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>rm</argument>
+                                        <argument>obibital-platform</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>   
+                            <execution>
+                                <id>create new container</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>run</argument>
+                                        <argument>--name</argument>
+                                        <argument>obibital-platform</argument>
+                                        <argument>-it</argument>
+                                        <argument>-v</argument>
+                                        <argument>obibital-db-config:/database/config</argument>
+                                        <argument>-v</argument>
+                                        <argument>obibital-db-tablespace:/database/tables</argument>
+                                        <argument>--detach</argument>
+                                        <argument>--restart</argument>
+                                        <argument>unless-stopped</argument>
+                                        <argument>telegram-modbot</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>                          
+                        </executions>
+                    </plugin>  
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+            <!--unclear if I need below-->
 
             <!-- copy the data files to where they are needed (if not already present). by default should not overwrite -->
             <!-- <plugin>
@@ -127,191 +356,4 @@
                     </dependency>
                 </dependencies>
             </plugin> -->
-
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>${dockerfile-maven-version}</version>
-                <executions>
-                    <execution>
-                    <id>build and push docker image</id>
-                    <goals>
-                        <goal>build</goal>
-                        <goal>push</goal>
-                    </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <repository>${project.artifactId}</repository>
-                    <buildArgs>
-                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-                    </buildArgs>
-                    <imageTags>
-                        <imageTag>${project.version}</imageTag>
-                        <imageTag>latest</imageTag>
-                    </imageTags>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <id>stop existing container</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <successCodes>
-                                <successCode>0</successCode>
-                                <successCode>1</successCode>
-                            </successCodes>
-                            <workingDirectory>${project.basedir}</workingDirectory> 
-                            <executable>docker</executable>
-                            <arguments>
-                                <argument>stop</argument>
-                                <argument>obibital-platform</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>      
-                    <execution>
-                        <id>remove existing container</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <successCodes>
-                                <successCode>0</successCode>
-                                <successCode>1</successCode>
-                            </successCodes>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <executable>docker</executable>
-                            <arguments>
-                                <argument>rm</argument>
-                                <argument>obibital-platform</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>     
-
-                    <!-- OPTIONAL volume refreshing -->
-                    <execution>
-                        <id>remove dbconfig volume</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <successCodes>
-                                <successCode>0</successCode>
-                                <successCode>1</successCode>
-                            </successCodes>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <executable>docker</executable>
-                            <arguments>
-                                <argument>volume</argument>
-                                <argument>rm</argument>
-                                <argument>obibital-db-config</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>    
-                    <execution>
-                        <id>remove dbtables volume</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <successCodes>
-                                <successCode>0</successCode>
-                                <successCode>1</successCode>
-                            </successCodes>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <executable>docker</executable>
-                            <arguments>
-                                <argument>volume</argument>
-                                <argument>rm</argument>
-                                <argument>obibital-db-tablespace</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>    
-
-
-                    <!-- -->
-
-                    <execution>
-                        <id>create dbconfig volume</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <successCodes>
-                                <successCode>0</successCode>
-                            </successCodes>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <executable>docker</executable>
-                            <arguments>
-                                <argument>volume</argument>
-                                <argument>create</argument>
-                                <argument>obibital-db-config</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>    
-                    <execution>
-                        <id>create tablespace volume</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <successCodes>
-                                <successCode>0</successCode>
-                            </successCodes>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <executable>docker</executable>
-                            <arguments>
-                                <argument>volume</argument>
-                                <argument>create</argument>
-                                <argument>obibital-db-tablespace</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>    
-                    <execution>
-                        <id>create new container</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <executable>docker</executable>
-                            <arguments>
-                                <argument>run</argument>
-                                <argument>--name</argument>
-                                <argument>obibital-platform</argument>
-                                <argument>-it</argument>
-                                <argument>-v</argument>
-                                <argument>obibital-db-config:/database/config</argument>
-                                <argument>-v</argument>
-                                <argument>obibital-db-tablespace:/database/tables</argument>
-                                <argument>--detach</argument>
-                                <argument>--restart</argument>
-                                <argument>unless-stopped</argument>
-                                <argument>telegram-modbot</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>                          
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
-
-
-<!--
-                                <argument>z-z-user</argument>
-                                <argument>postgres</argument> -->

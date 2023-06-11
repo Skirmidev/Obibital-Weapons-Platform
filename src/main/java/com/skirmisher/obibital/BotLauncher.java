@@ -28,6 +28,9 @@ public class BotLauncher {
             final Runnable poller = new TimerPoller(bot);
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             final ScheduledFuture<?> timer = scheduler.scheduleAtFixedRate(poller, 1, 1, MINUTES);
+
+            //confirm that bot redeployed (hardcoded to inform Skirmisher)
+            bot.announceRedeployment();
             
         } catch (TelegramApiException e) {
             e.printStackTrace();

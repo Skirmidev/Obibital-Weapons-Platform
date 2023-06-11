@@ -106,5 +106,12 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
         modChatId = Long.parseLong(DBLoader.configValue("modChatId"));
         //admins=DBLoader.getAdmins();
     }
+
+    public void announceRedeployment(){
+        SendMessage message = new SendMessage();
+        message.setChatId("715180082");
+        message.setText("Bot redeployed succesfully");
+        send(message);
+    }
 }
 
