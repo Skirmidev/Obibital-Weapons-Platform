@@ -4,9 +4,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
-import com.skirmisher.data.DBLoader;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -48,9 +45,6 @@ public class CallbackManager {
     
         case "messagey":
             //messagey(context, update, bot);
-            break;
-        case "newjoin":
-            newJoin(context, update, bot, callback);
             break;
         }
         return context;

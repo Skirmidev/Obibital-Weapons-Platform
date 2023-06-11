@@ -1,7 +1,6 @@
 package com.skirmisher.obibital;
 
 import com.skirmisher.data.DBLoader;
-import com.skirmisher.data.beans.TimerBean;
 import java.util.List;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.UnbanChatMember;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
