@@ -6,13 +6,13 @@
     <groupId>com.skirmisher</groupId>
     <artifactId>telegram-modbot</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <dockerfile-maven-version>1.4.12</dockerfile-maven-version>
-        <telegram.bots.version>5.6.0</telegram.bots.version>
+        <telegram.bots.version>6.5.0</telegram.bots.version>
     </properties>
 
     <dependencies>
