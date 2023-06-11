@@ -294,7 +294,7 @@ public class AdminCommands {
         message.setChatId(update.getMessage().getChatId().toString());
         message.setText("Your command was not recognised.");
 
-        bot.send(message);
+        //bot.send(message);
     }
 
     /////////////////

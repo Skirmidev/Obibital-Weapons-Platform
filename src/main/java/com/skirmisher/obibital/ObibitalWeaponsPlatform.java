@@ -16,10 +16,9 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     Long modChatId = 0l;
     List<Long> admins = new ArrayList<>();
 
-    //issue is not caused by wrong values present. :/
-    // public ObibitalWeaponsPlatform(DefaultBotOptions options) {
-    //     super(options);
-    // }
+    public ObibitalWeaponsPlatform() {
+        super(DBLoader.configValue("bottoken"));
+    }
 
     @Override
     public void onUpdateReceived(final Update update) {
