@@ -33,12 +33,6 @@ modulesExists=$(psql -t -U postgres -d obibital-db -c"SELECT * FROM information_
 # CREATE TABLE: CONFIG
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS config ( element VARCHAR ( 50 ) PRIMARY KEY UNIQUE NOT NULL, value VARCHAR ( 500 ));"
 
-# CREATE TABLE: USERS
-psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS users ( userid bigint PRIMARY KEY UNIQUE NOT NULL, username VARCHAR ( 50 ), name VARCHAR ( 50 ) NOT NULL, isadmin BOOLEAN DEFAULT false);"
-
-# CREATE TABLE: BANNEDSTICKERS
-psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS stickerbans ( packname VARCHAR ( 50 ) UNIQUE NOT NULL, bandate TIMESTAMP default current_timestamp);"
-
 # CREATE TABLE: TIMERS
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS timers ( id serial PRIMARY KEY UNIQUE NOT NULL, action VARCHAR ( 20 ) NOT NULL, args VARCHAR(100), expiry TIMESTAMP default current_timestamp);"
 
