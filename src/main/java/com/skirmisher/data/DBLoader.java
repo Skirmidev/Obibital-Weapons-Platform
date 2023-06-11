@@ -419,7 +419,7 @@ public class DBLoader {
     // ///////////////////////////////////////////
     // // Statistics                            //
     // ///////////////////////////////////////////
-    public static void logEvent(String event, int sourceUser, int affectedUser, String notes) {
+    public static void logEvent(String event, long sourceUser, long affectedUser, String notes) {
         String query = "INSERT INTO logging(event, sourceuser, affecteduser, notes) VALUES(?, ?, ?, ?)";
 
         try {
@@ -427,8 +427,8 @@ public class DBLoader {
             PreparedStatement pst = con.prepareStatement(query);
             
             pst.setString(1, event);
-            pst.setInt(2, sourceUser);
-            pst.setInt(3, affectedUser);
+            pst.setLong(2, sourceUser);
+            pst.setLong(3, affectedUser);
             pst.setString(4, notes);
 
             pst.executeUpdate();

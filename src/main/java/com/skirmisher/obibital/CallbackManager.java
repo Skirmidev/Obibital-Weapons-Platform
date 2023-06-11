@@ -124,7 +124,7 @@ public class CallbackManager {
                     case "ban":
                         try{
                             //ban user
-                            KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Integer.parseInt(userid));
+                            KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Long.parseLong(userid));
                             bot.execute(kick);
 
                             //messages

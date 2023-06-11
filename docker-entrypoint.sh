@@ -34,7 +34,7 @@ modulesExists=$(psql -t -U postgres -d obibital-db -c"SELECT * FROM information_
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS config ( element VARCHAR ( 50 ) PRIMARY KEY UNIQUE NOT NULL, value VARCHAR ( 500 ));"
 
 # CREATE TABLE: USERS
-psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS users ( userid integer PRIMARY KEY UNIQUE NOT NULL, username VARCHAR ( 50 ), name VARCHAR ( 50 ) NOT NULL, isadmin BOOLEAN DEFAULT false);"
+psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS users ( userid bigint PRIMARY KEY UNIQUE NOT NULL, username VARCHAR ( 50 ), name VARCHAR ( 50 ) NOT NULL, isadmin BOOLEAN DEFAULT false);"
 
 # CREATE TABLE: BANNEDSTICKERS
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS stickerbans ( packname VARCHAR ( 50 ) UNIQUE NOT NULL, bandate TIMESTAMP default current_timestamp);"
@@ -43,7 +43,7 @@ psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS stickerbans ( pack
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS timers ( id serial PRIMARY KEY UNIQUE NOT NULL, action VARCHAR ( 20 ) NOT NULL, args VARCHAR(100), expiry TIMESTAMP default current_timestamp);"
 
 # CREATE TABLE: LOGGING
-psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS logging ( id serial PRIMARY KEY UNIQUE NOT NULL, event VARCHAR ( 50 ), sourceuser integer REFERENCES users (userid), affecteduser integer REFERENCES users( userid ), notes VARCHAR ( 100 ), date TIMESTAMP default current_timestamp);"
+psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS logging ( id serial PRIMARY KEY UNIQUE NOT NULL, event VARCHAR ( 50 ), sourceuser bigint REFERENCES users (userid), affecteduser bigint REFERENCES users( userid ), notes VARCHAR ( 100 ), date TIMESTAMP default current_timestamp);"
 
 # CREATE TABLE: MODULES
 psql -U postgres -d obibital-db -c"CREATE TABLE IF NOT EXISTS modules ( module VARCHAR (50) PRIMARY KEY UNIQUE NOT NULL, enabled BOOLEAN NOT NULL DEFAULT false);"

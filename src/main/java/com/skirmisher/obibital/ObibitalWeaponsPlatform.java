@@ -24,6 +24,7 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(final Update update) {
         Context context = new Context();
+        System.out.println("update received: " + update.toString());
 
         if(update.hasCallbackQuery()){
             ////////////////////

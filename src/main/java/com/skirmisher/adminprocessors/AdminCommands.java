@@ -878,7 +878,7 @@ public class AdminCommands {
 
                 int unbanTime = Math.toIntExact(expiryTime.atZone(ZoneId.systemDefault()).toEpochSecond());
 
-                KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Integer.parseInt(args[1]));
+                KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Long.parseLong(args[1]));
                 kick.setUntilDate(unbanTime);
                 boolean success = true;
                 try{

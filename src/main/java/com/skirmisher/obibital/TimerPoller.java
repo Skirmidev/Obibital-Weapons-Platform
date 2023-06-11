@@ -65,7 +65,7 @@ public class TimerPoller implements Runnable{
     // UNBAN - userId //
     ////////////////////
     public void unBan(String[] args){
-        UnbanChatMember unban = new UnbanChatMember(bot.getGroupChatId().toString(), Integer.parseInt(args[0]));
+        UnbanChatMember unban = new UnbanChatMember(bot.getGroupChatId().toString(), Long.parseLong(args[0]));
         boolean success = false;
         try{
             success = bot.execute(unban);
@@ -104,7 +104,7 @@ public class TimerPoller implements Runnable{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void permissions(String [] args){ //this timer is unlikely to be required at any time, given permissions can already be set to expire at a certain time
         RestrictChatMember managePerms = new RestrictChatMember();
-        managePerms.setUserId(Integer.parseInt(args[0]));
+        managePerms.setUserId(Long.parseLong(args[0]));
         managePerms.setChatId(bot.getGroupChatId().toString());
         
         ChatPermissions perms = new ChatPermissions();
