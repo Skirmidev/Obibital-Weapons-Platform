@@ -24,13 +24,12 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(final Update update) {
         Context context = new Context();
-        System.out.println("update received: " + update.toString());
 
         if(update.hasCallbackQuery()){
             ////////////////////
             // Callback Query //
             ////////////////////
-            System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: callback Query");
+            // System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: callback Query");
             String callback = update.getCallbackQuery().getData();
             String [] callSplit = callback.split(":");
             if(callSplit[0].equals("group") || callSplit[0].equals("g")) {
@@ -45,7 +44,7 @@ public class ObibitalWeaponsPlatform extends TelegramLongPollingBot {
             /////////////
             // Message //
             /////////////
-            System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: message");
+            // System.out.println("ObibitalWeaponsPlatform:: onUpdateReceived:: message");
             if(update.getMessage().getChatId().equals(groupId)) {
                 ModuleControl.runChatModules(context, update, this);
                 //message in the group, process as normal

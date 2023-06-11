@@ -4,7 +4,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.skirmisher.obibital.ObibitalWeaponsPlatform;
-import com.skirmisher.processors.StickerPackBanner;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -69,24 +68,6 @@ public class AdminCommands {
                             commandNotEnabled(update, bot);
                         }
                         break;
-                    case "/addadmin":
-                        if(activeCommands.contains("addadmin")){
-                            addAdmin(update, bot, args);
-                            context.setResult("AdminCommands: addAdmin command");
-                            context.setBlockingResult(true);
-                        } else {
-                            commandNotEnabled(update, bot);
-                        }
-                        break;
-                    case "/removeadmin":
-                        if(activeCommands.contains("removeadmin")){
-                            removeAdmin(update, bot, args);
-                            context.setResult("AdminCommands: removeAdmin command");
-                            context.setBlockingResult(true);
-                        } else {
-                            commandNotEnabled(update, bot);
-                        }
-                        break;
                     case "/listadmins":
                         if(activeCommands.contains("listadmins")){
                             listAdmins(update, bot);
@@ -145,33 +126,6 @@ public class AdminCommands {
                         if(activeCommands.contains("removemodule")){
                             removeModule(update, bot, args);
                             context.setResult("AdminCommands: removeModule command");
-                            context.setBlockingResult(true);
-                        } else {
-                            commandNotEnabled(update, bot);
-                        }
-                        break;
-                    case "/banpack":
-                        if(activeCommands.contains("banpack")){
-                            banPack(update, bot, args);
-                            context.setResult("AdminCommands: banPack command");
-                            context.setBlockingResult(true);
-                        } else {
-                            commandNotEnabled(update, bot);
-                        }
-                        break;
-                    case "/unbanpack":
-                        if(activeCommands.contains("unbanpack")){
-                            unbanPack(update, bot, args);
-                            context.setResult("AdminCommands: unbanPack command");
-                            context.setBlockingResult(true);
-                        } else {
-                            commandNotEnabled(update, bot);
-                        }
-                        break;
-                    case "/getbannedpacks":
-                        if(activeCommands.contains("getbannedpacks")){
-                            getBannedPacks(update, bot);
-                            context.setResult("AdminCommands: getBnnnedPacks command");
                             context.setBlockingResult(true);
                         } else {
                             commandNotEnabled(update, bot);
@@ -344,98 +298,6 @@ public class AdminCommands {
         bot.send(message);
     }
 
-    ///////////////////////
-    // /addAdmin [admin] //
-    ///////////////////////
-    public static void addAdmin(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage();
-        message.setChatId(bot.getModChatId().toString());
-
-        if(args.length > 1){
-            // args supplied, check if valid
-            m_userId = p_userId.matcher(args[1]);
-            m_userName = p_userName.matcher(args[1]);
-            if (m_userId.find() ) {
-                // add the admin by this userid
-                if(DBLoader.addAdmin(Integer.parseInt(args[1]))){
-                    bot.reloadConfig();
-                    message.setText(args[1] + " added to admin list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
-
-                    DBLoader.logEvent("ADD_ADMIN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), "");
-                } else {
-                    message.setText(args[1] + " is already in the admin list");
-                }
-
-                bot.send(message);
-            } else if ( m_userName.find() ) {
-                //find the userid and add the admin
-                //TODO: add @username functionality
-                message.setChatId(update.getMessage().getChatId().toString());
-                message.setText("@usernames are not supported at this time, please use userId");
-
-                bot.send(message);
-            } else {
-                //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId().toString());
-                message.setText("incorrect format. please use the userid as input");
-
-                bot.send(message);
-            }
-        } else {
-            // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId().toString());
-            message.setText("Please provide the correct input `/addAdmin userid`");
-
-            bot.send(message);
-        }
-    }
-
-    //////////////////////////
-    // /removeAdmin [admin] //
-    //////////////////////////
-    public static void removeAdmin(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage();
-        message.setChatId(bot.getModChatId().toString());
-
-        if(args.length > 1){
-            // args supplied, check if valid
-            m_userId = p_userId.matcher(args[1]);
-            m_userName = p_userName.matcher(args[1]);
-            if (m_userId.find() ) {
-                // add the admin by this userid
-                if (DBLoader.removeAdmin(Integer.parseInt(args[1]))){
-                    bot.reloadConfig();
-                    message.setText(args[1] + " removed from admin list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
-
-                    DBLoader.logEvent("REMOVE_ADMIN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), "");
-                } else {
-                    message.setText(args[1] + " is not in the admin list");
-                }
-
-                bot.send(message);
-            } else if ( m_userName.find() ) {
-                //find the userid and remove from admin
-                //TODO: add @username functionality
-                message.setChatId(update.getMessage().getChatId().toString());
-                message.setText("@usernames are not supported at this time, please use userId");
-
-                bot.send(message);
-            } else {
-                //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId().toString());
-                message.setText("incorrect format. please use the userid as input");
-
-                bot.send(message);
-            }
-        } else {
-            // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId().toString());
-            message.setText("Please provide the correct input `/removeAdmin userid`");
-
-            bot.send(message);
-        }
-    }
-
     /////////////////
     // /listAdmins //
     /////////////////
@@ -469,7 +331,7 @@ public class AdminCommands {
                 if(result){
                     message.setText(args[1] + " has been enabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("ENABLE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
+                    //DBLoader.logEvent("ENABLE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
 
                     ModuleControl.reloadModules();
                 } else {
@@ -509,7 +371,7 @@ public class AdminCommands {
                 if(result){
                     message.setText(args[1] + " has been disabled by " + update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("DISABLE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
+                    //DBLoader.logEvent("DISABLE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
 
                     ModuleControl.reloadModules();
                 } else {
@@ -606,7 +468,7 @@ public class AdminCommands {
                     ModuleControl.reloadModules();
                     message.setText(args[1] + " added to the module list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("ADD_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
+                    //DBLoader.logEvent("ADD_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
                 } else {
                     message.setText(args[1] + " already present in the modules list");
                 }
@@ -648,7 +510,7 @@ public class AdminCommands {
                     ModuleControl.reloadModules();
                     message.setText(args[1] + " removed from the module list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
 
-                    DBLoader.logEvent("REMOVE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
+                    //DBLoader.logEvent("REMOVE_MODULE", update.getMessage().getFrom().getId(), 0, args[1]);
                 } else {
                     message.setText(args[1] + " not present in the modules list");
                 }
@@ -668,101 +530,6 @@ public class AdminCommands {
 
             bot.send(message);
         }
-    }
-
-    //////////////////////////
-    // /banPack [packname] ///
-    //////////////////////////
-    public static void banPack(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage();
-        message.setChatId(bot.getModChatId().toString());
-
-        if(args.length > 1){
-            // args supplied, check if valid
-            m_stickerPack = p_stickerPack.matcher(args[1]);
-            if (m_stickerPack.find() ) {
-                // add the module by this name
-                if (DBLoader.banSticker(args[1])){
-                    StickerPackBanner.reloadBannedPacks();
-                    message.setText(args[1] + " added to the banned stickers list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
-
-                    DBLoader.logEvent("BAN_STICKERPACK", update.getMessage().getFrom().getId(), 0, args[1]);
-                } else {
-                    message.setText(args[1] + " already present in the banned stickers list");
-                }
-
-                bot.send(message);
-            } else {
-                //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId().toString());
-                message.setText("incorrect format. stickerpack names are comprised of only letters (may be incorrect)");
-
-                bot.send(message);
-            }
-        } else {
-            // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId().toString());
-            message.setText("Please provide the correct input `/banPack [packName]`");
-
-            bot.send(message);
-        }
-    }
-
-    ////////////////////////////
-    // /unbanPack [packname] //
-    ////////////////////////////
-    public static void unbanPack(Update update, ObibitalWeaponsPlatform bot, String[] args){
-        SendMessage message = new SendMessage();
-        message.setChatId(bot.getModChatId().toString());
-
-        if(args.length > 1){
-            // args supplied, check if valid
-            m_stickerPack = p_stickerPack.matcher(args[1]);
-            if (m_stickerPack.find() ) {
-                // add the module by this name
-                if (DBLoader.unbanSticker(args[1])){
-                    StickerPackBanner.reloadBannedPacks();
-                    message.setText(args[1] + " removed from the banned stickers list by " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName());
-
-                    DBLoader.logEvent("UNBAN_STICKERPACK", update.getMessage().getFrom().getId(), 0, args[1]);
-                } else {
-                    message.setText(args[1] + " not present in the banned stickers list");
-                }
-
-                bot.send(message);
-            } else {
-                //field doesn't match, prompt user for better one
-                message.setChatId(update.getMessage().getChatId().toString());
-                message.setText("incorrect format. stickerpack are comprised of only letters (may be incorrect)");
-
-                bot.send(message);
-            }
-        } else {
-            // please supply a valid username or userid
-            message.setChatId(update.getMessage().getChatId().toString());
-            message.setText("Please provide the correct input `/unbanPack [packname]`");
-
-            bot.send(message);
-        }
-    }
-
-    /////////////////////
-    // /getBannedPacks //
-    /////////////////////
-    public static void getBannedPacks(Update update, ObibitalWeaponsPlatform bot){
-        SendMessage message = new SendMessage();
-        message.setChatId(update.getMessage().getChatId().toString());
-
-        List<String> bannedPacks = DBLoader.GetBannedStickers();
-        
-        String response = "The following stickerpacks have been banned: \n";
-
-        for(String pack : bannedPacks){
-            response = response + pack + "\n";
-        }
-
-        message.setText(response);
-        bot.send(message);
     }
 
     //////////////////////////////////////////////////////////////
@@ -802,7 +569,7 @@ public class AdminCommands {
 
         DBLoader.addTimer("UNBAN", args[1], expiryTime);
 
-        DBLoader.logEvent("CREATE_MANUAL_TIMER", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), "UNBAN - " + expiryTime.toString());
+        //DBLoader.logEvent("CREATE_MANUAL_TIMER", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), "UNBAN - " + expiryTime.toString());
     }
 
     ////////////////////////////////////////////////////////
@@ -878,37 +645,37 @@ public class AdminCommands {
 
                 int unbanTime = Math.toIntExact(expiryTime.atZone(ZoneId.systemDefault()).toEpochSecond());
 
-                KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Long.parseLong(args[1]));
-                kick.setUntilDate(unbanTime);
-                boolean success = true;
-                try{
-                    bot.execute(kick);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                    success = false;
-                }
+                //KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Integer.parseInt(args[1]));
+                // kick.setUntilDate(unbanTime);
+                // boolean success = true;
+                // try{
+                //     bot.execute(kick);
+                // } catch (TelegramApiException e) {
+                //     e.printStackTrace();
+                //     success = false;
+                // }
 
-                //create reason
-                String reason = "";
-                for(int i = 3; i < args.length; i++){
-                    reason = reason + args[i] + " ";
-                }
+                // //create reason
+                // String reason = "";
+                // for(int i = 3; i < args.length; i++){
+                //     reason = reason + args[i] + " ";
+                // }
 
-                if(success){
-                    // add a ban and perform the ban
-                    DBLoader.logEvent("BAN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), reason + "- " + "automatic unban on " + expiryTime);
+                // if(success){
+                //     // add a ban and perform the ban
+                //     //DBLoader.logEvent("BAN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), reason + "- " + "automatic unban on " + expiryTime);
 
-                    List<LogValue> warnLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "WARN");
-                    List<LogValue> banLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "BAN");
+                //     List<LogValue> warnLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "WARN");
+                //     List<LogValue> banLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "BAN");
                     
-                    message.setText("Banned succesfully for " + reason + " until " + expiryTime.toString() + ". User " + args[1] + " has " + warnLogs.size() + " warnings and " + banLogs.size() + " manual bans on record.");
-                    bot.send(message);
+                //     message.setText("Banned succesfully for " + reason + " until " + expiryTime.toString() + ". User " + args[1] + " has " + warnLogs.size() + " warnings and " + banLogs.size() + " manual bans on record.");
+                //     bot.send(message);
 
-                    DBLoader.addTimer("NOTIFY", bot.getModChatId() + args[1] + " has been unbanned from " + DBLoader.configValue("networkName") + " and may now rejoin: " + DBLoader.configValue("groupLink"), expiryTime);
-                } else {
-                    message.setText("Ban failure - please consult an administrator");
-                    bot.send(message);
-                }
+                //     DBLoader.addTimer("NOTIFY", bot.getModChatId() + args[1] + " has been unbanned from " + DBLoader.configValue("networkName") + " and may now rejoin: " + DBLoader.configValue("groupLink"), expiryTime);
+                // } else {
+                //     message.setText("Ban failure - please consult an administrator");
+                //     bot.send(message);
+                // }
 
             } else if ( m_userName.find() ) {
                 //find the userid and add the admin
@@ -952,7 +719,7 @@ public class AdminCommands {
                 }
 
                 // add a warning 
-                DBLoader.logEvent("WARN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), reason);
+                //DBLoader.logEvent("WARN", update.getMessage().getFrom().getId(), Integer.parseInt(args[1]), reason);
 
                 List<LogValue> warnLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "WARN");
                 List<LogValue> banLogs = DBLoader.getLogsByAffectedUserAndEvent(Integer.parseInt(args[1]), "BAN");

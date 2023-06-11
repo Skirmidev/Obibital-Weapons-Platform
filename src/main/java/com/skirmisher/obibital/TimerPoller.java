@@ -24,7 +24,7 @@ public class TimerPoller implements Runnable{
         try{
             //check for expired timers
             ArrayList<TimerValue> expiredTimers = DBLoader.getExpiredTimers();
-            System.out.println(LocalDateTime.now().toString() + "Timer Poller:: Found " + expiredTimers.size() + " expired timers");
+            //System.out.println(LocalDateTime.now().toString() + "Timer Poller:: Found " + expiredTimers.size() + " expired timers");
 
             //for each expired timer, see what we're meant to do with it
             for(TimerValue tim : expiredTimers){

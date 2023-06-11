@@ -9,7 +9,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageRe
 import com.skirmisher.data.DBLoader;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 
 public class CallbackManager {
 
@@ -24,8 +23,8 @@ public class CallbackManager {
                 feedback(context, update, bot, callback);
                 break;
             
-            case "peacefur":
-                //peacefur(context, update, bot);
+            case "peaceful":
+                //peaceful(context, update, bot);
                 break;
         
             case "messagey":
@@ -43,8 +42,8 @@ public class CallbackManager {
             //angewy(context, update, bot);
             break;
         
-        case "peacefur":
-            //peacefur(context, update, bot);
+        case "peaceful":
+            //peaceful(context, update, bot);
             break;
     
         case "messagey":
@@ -83,96 +82,6 @@ public class CallbackManager {
         }
     }
 
-    ////////////////////////
-    // newjoin - ban/safe //
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // messageFormat: "New user has joined: " + user.getFirstName()+" "+user.getLastName() + "(" + user.getUserName() +") " + "[ID: " + user.getId() + "]" //
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void newJoin(Context context, Update update, ObibitalWeaponsPlatform bot, String[] callback){
-        context.setBlockingResult(true);
-        context.setResult("Callback:: admin:: newJoin");
-
-        if(update.getCallbackQuery().getMessage() == null){
-            AnswerCallbackQuery answer = new AnswerCallbackQuery();
-            answer.setCallbackQueryId(update.getCallbackQuery().getId());
-            answer.setShowAlert(true);
-            answer.setText("Message is too old to interact succesfully");
-    
-            try{
-                bot.execute(answer);
-            } catch (TelegramApiException e){
-                e.printStackTrace();
-            }
-        } else {
-            String originalMessage = update.getCallbackQuery().getMessage().getText();
-
-            m_userId = p_userId.matcher(originalMessage);
-
-            String userid = "";
-            if (m_userId.find() ) {
-                String[] splittin = m_userId.group(0).split(" ");
-                userid=splittin[1];
-                System.out.println("userid: " + userid);
-
-                EditMessageText editM = new EditMessageText();
-
-                editM.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
-                editM.setChatId(update.getCallbackQuery().getChatInstance().toString());
-                editM.setChatId("" + update.getCallbackQuery().getMessage().getChat().getId());
-
-                switch(callback[2]){
-                    case "ban":
-                        try{
-                            //ban user
-                            KickChatMember kick = new KickChatMember(bot.getGroupChatId().toString(), Long.parseLong(userid));
-                            bot.execute(kick);
-
-                            //messages
-                            editM.setParseMode("MarkdownV2");
-                            String response = "~" + Utilities.makeMarkdownFriendly(originalMessage) + "~\n Banned by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
-                            System.out.println("Response: " + response);
-                            
-                            editM.setText(response);
-                            bot.execute(editM);
-                            DBLoader.logEvent("BAN", update.getCallbackQuery().getFrom().getId(), Integer.parseInt(userid), "New join");
-                        } catch (TelegramApiException e){
-                            System.out.println(e.toString());
-                            e.printStackTrace();
-                        }
-                        break;
-                    case "safe":
-                        try{
-                            editM.setParseMode("MarkdownV2");
-                            String response = "~" + Utilities.makeMarkdownFriendly(originalMessage) + "~\n Deemed safe by " + Utilities.makeMarkdownFriendly(update.getCallbackQuery().getFrom().getFirstName() + " " + update.getCallbackQuery().getFrom().getLastName());
-                            System.out.println("Response: " + response);
-                            editM.setText(response);
-                        
-                            bot.execute(editM);
-                            DBLoader.logEvent("MARK SAFE", update.getCallbackQuery().getFrom().getId(), Integer.parseInt(userid), "New Join");
-                        } catch (TelegramApiException e){
-                            System.out.println(e.toString());
-                            e.printStackTrace();
-                        }
-                        break;
-                }
-                
-                AnswerCallbackQuery answer = new AnswerCallbackQuery();
-                answer.setCallbackQueryId(update.getCallbackQuery().getId());
-                answer.setShowAlert(false);
-        
-                try{
-                    bot.execute(answer);
-                } catch (TelegramApiException e){
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.print("Userid not found - error");
-            }
-
-            
-        }
-    }
-
     static void angewy(Context context, Update update, ObibitalWeaponsPlatform bot){
         context.setBlockingResult(true);
         context.setResult("Callback:: group:: angewy");
@@ -181,7 +90,7 @@ public class CallbackManager {
         AnswerCallbackQuery answer = new AnswerCallbackQuery();
 		answer.setCallbackQueryId(update.getCallbackQuery().getId());
 		answer.setShowAlert(true);
-		answer.setText("YOU HAVE PWESSED THE ANGEWY BUTTON ( ͡⚆ ͜ʖ ͡⚆)╭∩╮");
+		answer.setText("YOU HAVE PWESSED THE ANGEWY BUTTON");
 
         try{
             bot.execute(answer);
@@ -190,7 +99,7 @@ public class CallbackManager {
         }
     }
 
-    static void peacefur(Context context, Update update, ObibitalWeaponsPlatform bot){
+    static void peaceful(Context context, Update update, ObibitalWeaponsPlatform bot){
         context.setBlockingResult(true);
         context.setResult("Callback:: group:: angewy");
 

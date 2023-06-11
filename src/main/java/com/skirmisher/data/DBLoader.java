@@ -1,15 +1,7 @@
 package com.skirmisher.data;
-
-import com.opencsv.bean.*;
-import com.opencsv.exceptions.CsvDataTypeMismatchException;
-import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 import com.skirmisher.data.beans.*;
@@ -79,90 +71,6 @@ public class DBLoader {
     }
 
     // ///////////////////////////////////////////
-    // // Banned Sticker Packs                  //
-    // ///////////////////////////////////////////
-    public static List<String> GetBannedStickers() {
-        String query = "SELECT packname FROM stickerbans";
-        ArrayList<String> banned = new ArrayList<>();
-
-        try {
-            Connection con = DriverManager.getConnection(url, user, null);
-            Statement st = con.createStatement();
-            
-            ResultSet rs = st.executeQuery(query);
-
-            while(rs.next()){
-                banned.add(rs.getString(1));
-            }
-
-            st.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return banned;
-    }
-
-    public static boolean CheckIfStickerBanned(String packName) {
-        String query = "SELECT packname FROM stickerbans WHERE packname = '" + packName + "'";
-
-        try {
-            Connection con = DriverManager.getConnection(url, user, null);
-            Statement st = con.createStatement();
-            
-            ResultSet rs = st.executeQuery(query);
-
-            if(rs.next()){
-                return true;
-            }
-
-            st.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    // public static List<BannedStickerBean> GetBannedStickerBeans(){
-    // }
-
-    // public static boolean banStickers(List<String> packsToBan) {
-    // }
-
-    public static boolean banSticker(String packName) {
-        String query = "INSERT INTO stickerbans(packname) VALUES(?)";
-
-        try {
-            Connection con = DriverManager.getConnection(url, user, null);
-            PreparedStatement pst = con.prepareStatement(query);
-            
-            pst.setString(1, packName);
-            int response = pst.executeUpdate();
-            return (response != 0);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static boolean unbanSticker(String packName) {
-        String query = "DELETE FROM stickerbans WHERE packname = ?";
-
-        try {
-            Connection con = DriverManager.getConnection(url, user, null);
-            PreparedStatement pst = con.prepareStatement(query);
-            
-            pst.setString(1, packName);
-            int response = pst.executeUpdate();
-            return (response != 0);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // ///////////////////////////////////////////
     // // Approved Admin List                   //
     // ///////////////////////////////////////////
     public static Map<String, Integer> getAdmins(){
@@ -185,58 +93,6 @@ public class DBLoader {
         }
 
         return admins;
-    }
-
-    public static boolean addAdmin(int id) {
-        String query = "UPDATE users SET isadmin = 'true' WHERE userid = ?";
-
-        try {
-            Connection con = DriverManager.getConnection(url, user, null);
-            PreparedStatement pst = con.prepareStatement(query);
-            
-            pst.setInt(1, id);
-            int response = pst.executeUpdate();
-            return (response != 0);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static boolean removeAdmin(int id) {
-        String query = "UPDATE users SET isadmin = 'false' WHERE userid = ?";
-
-        try {
-            Connection con = DriverManager.getConnection(url, user, null);
-            PreparedStatement pst = con.prepareStatement(query);
-            
-            pst.setInt(1, id);
-            int response = pst.executeUpdate();
-            return (response != 0);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static boolean checkIfAdmin(int id) {
-        String query = "SELECT isadmin FROM users WHERE userid = '" + id + "'";
-
-        try {
-            Connection con = DriverManager.getConnection(url, user, null);
-            Statement st = con.createStatement();
-            
-            ResultSet rs = st.executeQuery(query);
-
-            boolean returnVal = rs.next();
-
-            st.close();
-            return returnVal;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false;
     }
 
     // ///////////////////////
@@ -412,14 +268,11 @@ public class DBLoader {
         return false;
     }
 
-    // public static void updateTimerId() {
-    // }
-
     
     // ///////////////////////////////////////////
     // // Statistics                            //
     // ///////////////////////////////////////////
-    public static void logEvent(String event, long sourceUser, long affectedUser, String notes) {
+    public static void logEvent(String event, int sourceUser, int affectedUser, String notes) {
         String query = "INSERT INTO logging(event, sourceuser, affecteduser, notes) VALUES(?, ?, ?, ?)";
 
         try {
@@ -427,8 +280,8 @@ public class DBLoader {
             PreparedStatement pst = con.prepareStatement(query);
             
             pst.setString(1, event);
-            pst.setLong(2, sourceUser);
-            pst.setLong(3, affectedUser);
+            pst.setInt(2, sourceUser);
+            pst.setInt(3, affectedUser);
             pst.setString(4, notes);
 
             pst.executeUpdate();

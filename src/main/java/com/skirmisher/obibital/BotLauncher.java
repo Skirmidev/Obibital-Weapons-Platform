@@ -7,7 +7,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.concurrent.Executors;
 
 import com.skirmisher.data.DBLoader;
-import com.skirmisher.processors.StickerPackBanner;
 import com.skirmisher.obibital.ModuleControl;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 
@@ -20,11 +19,10 @@ public class BotLauncher {
     public static void main(String [] args){
 
         try{
+
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
 
             ObibitalWeaponsPlatform bot = new ObibitalWeaponsPlatform();
-
-            StickerPackBanner.reloadBannedPacks();
 
             ModuleControl.reloadModules();
 
