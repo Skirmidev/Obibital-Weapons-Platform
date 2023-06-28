@@ -10,12 +10,16 @@ import com.skirmisher.obibital.Context;
 import java.time.LocalDateTime;
 
 public class StickerSpam {
-    static int stickerCount = 0;
-    static Boolean hasSentMessage = false;
-    static ArrayList<Update> lastStickers = new ArrayList<>();
-    static LinkedList<Update> last6Messages = new LinkedList<>();
+    int stickerCount = 0;
+    Boolean hasSentMessage = false;
+    ArrayList<Update> lastStickers = new ArrayList<>();
+    LinkedList<Update> last6Messages = new LinkedList<>();
 
-    public static Context spamCheck(Context context, Update update, ObibitalWeaponsPlatform bot){
+    public StickerSpam() {
+
+    }
+
+    public Context spamCheck(Context context, Update update, ObibitalWeaponsPlatform bot){
         //System.out.println("StickerSpam:: spamCheck");
         if(!context.isBlockingResult()){
 
@@ -37,7 +41,7 @@ public class StickerSpam {
 
             if(stickerCount > 3 && update.getMessage().hasSticker()){
                 spamDetected(context, update, bot);
-                System.out.println("StickerSpam:: spam detected at " + LocalDateTime.now().toString());
+                //System.out.println("StickerSpam:: spam detected at " + LocalDateTime.now().toString());
             } else if (stickerCount < 3){
                 hasSentMessage = false;
             }
@@ -45,7 +49,7 @@ public class StickerSpam {
         return context;
     }
 
-    private static void spamDetected(Context context, Update update, ObibitalWeaponsPlatform bot){
+    private void spamDetected(Context context, Update update, ObibitalWeaponsPlatform bot){
         DeleteMessage delete = new DeleteMessage(update.getMessage().getChatId().toString(), update.getMessage().getMessageId());
         try{
             bot.execute(delete);

@@ -1,8 +1,12 @@
 botusername,BOTNAME
 bottoken,TOKEN FROM BOTFATHER
-groupId,GROUPID
-modChatId,MOD CONTROL GROUPID
 networkName,give a name to your network here (purely cosmetic)
 groupLink,place a link to your group here
 activeAdminCommands,disablemodule enablemodule getmodules modulestatus banpack unbanpack getbannedpacks createunbantimer getlogs getalllogs getlastweeklogs
 developerId,DEVELOPERID
+sfw,SFWID
+events,EVENTSID
+lobby,LOBBYID
+nsfw,NSFWID
+mod,MODID
+announce,ANNOUNCEID
